@@ -14,6 +14,7 @@ all_feats = list()
 all_feats.append(feat)
 
 mat = Utils.combine_features(ds, all_feats)
+grades = ds.getGrades()
 
 grades = mat[0,:] # TODO: set the grades
 lr = LinearRegression(mat, grades)
