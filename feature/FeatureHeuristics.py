@@ -1,14 +1,13 @@
 import abc
 from FeatureBase import FeatureBase
 import nltk
+import numpy as np
 
-### TODO do something with data/corpus.pickle
-
-class FeatureUnigram(object):
+class FeatureHeuristics(object):
 
     def __init__(self):
-        self.features = list()
-        self.type = 'undefined'
+        self.features = np.array(())
+        self.type = 'real'
 
     def numFeatures(self):
         """Return the number of features for this feature vector"""
@@ -18,18 +17,24 @@ class FeatureUnigram(object):
         """Returns string description of the feature type, such as 'real-valued', 'binary', 'enum', etc."""
         return self.type
 
-    def getFeatures(self, lineNum):
-        """Returns ordered list of features."""
+    def getInstanceFeatures(self, lineNum):
+        """Returns numpy array of features."""
         return
+
+    def getFeatureMatrix(self):
+        """Returns numpy matrix of features"""
+        return self.features
 
     def extractFeatures(self, ds):
         """Extracts features from a DataSet ds"""
+        lenfeats = list()
         for line in ds.getRawText():
-            print line
-            text = nltk.word_tokenize(line)
-            print nltk.pos_tag(text)
-            return
+            curfeat = list()
+            curfeat.append(len(line))
+            lenfeats.append(curfeat)
+
+        self.features = np.asarray(lenfeats)
         return
 
-FeatureBase.register(FeatureUnigram)
+FeatureBase.register(FeatureHeuristics)
 
