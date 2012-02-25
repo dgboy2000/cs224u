@@ -33,8 +33,17 @@ class LinearRegression:
             y_hat += self.intercept
         return y_hat
         
-    def grade(self, x, min_grade, max_grade):
+    def grade(self, x):
         """Return an integer grade for x"""
+        score = self.predict(x)
+        grade = self.min_grade
+        for cutoff_score in self.cutoff_scores:
+            if score < cutoff_score:
+                return grade
+            grade += 1
+        return self.max_grade
+        
+    def grade_by_rounding(self, min_grade, max_grade):
         score = self.predict(x)
         grade = int(round(score))
         return max(min(max_grade, grade), min_grade)
@@ -53,6 +62,8 @@ class LinearRegression:
         
         if len(scores) != sum(grade_counts.values()):
             raise "ERROR: found %d scores and %d grades; must be same number" %(len(scores), sum(grade_counts.values()))
+        if grade_counts[possible_grades[0]] * grade_counts[possible_grades[-1]] == 0:
+            raise "ERROR: must have at least one grade in the highest and lowest buckets to set the curve"
             
         num_scores = len(scores)
         scores.sort()
@@ -60,7 +71,7 @@ class LinearRegression:
         self.cutoff_scores = []
         for grade in possible_grades[:-1]:
             num_lower_scores += grade_counts[grade]
-            
+            self.cutoff_scores.append(float(scores[num_lower_scores-1] + scores[num_lower_scores]) / 2)
             
             
             
