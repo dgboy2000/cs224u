@@ -33,6 +33,45 @@ class LinearRegression:
             y_hat += self.intercept
         return y_hat
         
+    def grade(self, x, min_grade, max_grade):
+        """Return an integer grade for x"""
+        score = self.predict(x)
+        grade = int(round(score))
+        return max(min(max_grade, grade), min_grade)
+        
+    def set_curve(self, scores, grade_counts):
+        """Find the score cutoffs that separate each of the different possible grades."""
+        possible_grades = grade_counts.keys()
+        possible_grades.sort()
+        last_grade = possible_grades[0]
+        for grade in possible_grades[1:]:
+            if grade - last_grade != 1:
+                raise "ERROR: did not specify count for grade %d; only saw these grades: %s" %(grade, str(possible_grades))
+            last_grade = grade
+        self.min_grade = possible_grades[0]
+        self.max_grade = possible_grades[-1]
+        
+        if len(scores) != sum(grade_counts.values()):
+            raise "ERROR: found %d scores and %d grades; must be same number" %(len(scores), sum(grade_counts.values()))
+            
+        num_scores = len(scores)
+        scores.sort()
+        num_lower_scores = 0
+        self.cutoff_scores = []
+        for grade in possible_grades[:-1]:
+            num_lower_scores += grade_counts[grade]
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        
 
 
 
