@@ -7,7 +7,7 @@ class LinearRegression:
     def __init__(self, X, Y):
         """def __init__(self, X, Y):
         
-        X is a matrix where the i-th row corresponds to the i-th data point. Y is the intercept vector."""
+        X is a matrix where the i-th row corresponds to the i-th data point. Y is the output vector."""
         self.X = numpy.array(X)
         self.Y = numpy.array(Y)
         self.has_intercept = False
