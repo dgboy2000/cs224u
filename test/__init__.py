@@ -1,5 +1,7 @@
 import glob
-for filename in glob.iglob('test_*.py'):
-    filename = filename[:-3]
+import re
+for filename in glob.iglob('test/test_*.py'):
+    filename = re.sub('[^/]+/', '', filename[:-3])
+    # import pdb;pdb.set_trace()
     exec("import %s" %filename)
     exec("from %s import *" %filename)
