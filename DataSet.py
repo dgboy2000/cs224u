@@ -10,6 +10,7 @@
 #       that means we'd hold features in this class.
 
 import csv
+import numpy as np
 
 class DataSet:
     def __init__(self):
@@ -17,6 +18,7 @@ class DataSet:
         self.rows = list() # dataset is a matrix - one level deep of nested lists
         self.textOnly = list() # just a list of the text
         self.isTrainSet = False
+        self.grades = list()
 
     def importData(self, filename):
         reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar='"')
@@ -26,9 +28,16 @@ class DataSet:
             if first:
                 self.colNames = row
                 first = False
+                print row[6]
+                print row[9]
             else:
                 self.rows.append(row)
                 self.textOnly.append(row[2])
+
+                if (row[6]):
+                    self.grades.append(int(row[6]))
+                else:
+                    self.grades.append(int(row[9]))
 
         return
 
@@ -48,5 +57,6 @@ class DataSet:
     def getRawText(self):
         return self.textOnly
 
-    def getAggGrade(self, lineNum):
-        pass
+    # Returns a numpy array of the rades
+    def getGrades(self):
+        return np.asarray(self.grades)
