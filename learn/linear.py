@@ -43,7 +43,7 @@ class LinearRegression:
             grade += 1
         return self.max_grade
         
-    def grade_by_rounding(self, min_grade, max_grade):
+    def grade_by_rounding(self, x, min_grade, max_grade):
         score = self.predict(x)
         grade = int(round(score))
         return max(min(max_grade, grade), min_grade)
