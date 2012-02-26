@@ -41,6 +41,8 @@ class FeatureSpelling(object):
 
             curfeat.append(len(misspelled_words))
             curfeat.append(len(misspelled_words)/len(word_set)) 
+            
+            lenfeats.append(curfeat)
 
         self.features = np.asarray(lenfeats)
         return
