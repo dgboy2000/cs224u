@@ -18,25 +18,56 @@ class DataSet:
         self.rows = list() # dataset is a matrix - one level deep of nested lists
         self.textOnly = list() # just a list of the text
         self.isTrainSet = False
+        self.domain_id = 1
         self.grades = list()
+        self.prediction_ids = list()
+        self.essay_ids = list()
+        self.essay_set = None
 
-    def importData(self, filename, essay_type):
+    def importData(self, filename, essay_set, domain_id=1):
         reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar='"')
         first = True
+
+        self.domain_id = domain_id
+        self.essay_set = essay_set
+
+        grade_col = -1
+        text_col = -1
+        essay_set_col = -1
+        pred_id_col = -1
+        essay_id_col = -1
 
         for row in reader:
             if first:
                 self.colNames = row
+                i = 0
+                for col in row:
+                    if col == 'essay_set':
+                        essay_set_col = i
+                    elif col == 'essay':
+                        text_col = i
+                    elif col == 'essay_id':
+                        essay_id_col = i
+                    elif domain_id == 1 and col == 'domain1_score':
+                        grade_col = i
+                    elif domain_id == 2 and col == 'domain2_score':
+                        grade_col = i
+                    elif domain_id == 1 and col == 'domain1_predictionid':
+                        pred_id_col = i
+                    elif domain_id == 2 and col == 'domain2_predictionid':
+                        pred_id_col = i
+                    i += 1
                 first = False
             else:
-                if int(row[1]) == essay_type:
+                if int(row[essay_set_col]) == essay_set:
                     self.rows.append(row)
-                    self.textOnly.append(row[2])
+                    self.textOnly.append(row[text_col])
+                    self.essay_ids.append(int(row[essay_id_col]))
 
-                    if (row[6]):
-                        self.grades.append(int(row[6]))
-                    else:
-                        self.grades.append(int(row[9]))
+                    if grade_col > -1:
+                        self.grades.append(int(row[grade_col]))
+                    if pred_id_col > -1:
+                        self.prediction_ids.append(int(row[pred_id_col]))
 
         return
 
@@ -56,6 +87,18 @@ class DataSet:
     def getRawText(self):
         return self.textOnly
 
+    def outputKaggle(self, grades, fd):
+        """Output standard Kaggle validation set format. file will be appended to."""
+
+        predweight = '1'
+        if self.essay_set == 2:
+            predweight = '0.5'
+
+        for i in range(self.size()):
+            str = "%d\t%d\t%d\t%s\t%d\n" % (self.prediction_ids[i], self.essay_ids[i], self.essay_set, predweight, grades[i])
+            fd.write(str)
+
     # Returns a numpy array of the rades
     def getGrades(self):
+        # TODO throw exception if grades is empty
         return np.asarray(self.grades)
