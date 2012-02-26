@@ -20,7 +20,7 @@ class DataSet:
         self.isTrainSet = False
         self.grades = list()
 
-    def importData(self, filename):
+    def importData(self, filename, essay_type):
         reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar='"')
         first = True
 
@@ -28,16 +28,15 @@ class DataSet:
             if first:
                 self.colNames = row
                 first = False
-                print row[6]
-                print row[9]
             else:
-                self.rows.append(row)
-                self.textOnly.append(row[2])
+                if int(row[1]) == essay_type:
+                    self.rows.append(row)
+                    self.textOnly.append(row[2])
 
-                if (row[6]):
-                    self.grades.append(int(row[6]))
-                else:
-                    self.grades.append(int(row[9]))
+                    if (row[6]):
+                        self.grades.append(int(row[6]))
+                    else:
+                        self.grades.append(int(row[9]))
 
         return
 
