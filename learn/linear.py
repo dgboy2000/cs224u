@@ -54,16 +54,17 @@ class LinearRegression:
         possible_grades.sort()
         last_grade = possible_grades[0]
         for grade in possible_grades[1:]:
-            if grade - last_grade != 1:
-                raise "ERROR: did not specify count for grade %d; only saw these grades: %s" %(grade, str(possible_grades))
+            for i in range(last_grade + 1, grade):
+                grade_counts[i] = 0
+                print "WARNING: did not specify count for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
             last_grade = grade
         self.min_grade = possible_grades[0]
         self.max_grade = possible_grades[-1]
         
         if len(scores) != sum(grade_counts.values()):
-            raise "ERROR: found %d scores and %d grades; must be same number" %(len(scores), sum(grade_counts.values()))
+            raise Exception("ERROR: found %d scores and %d grades; must be same number" %(len(scores), sum(grade_counts.values())))
         if grade_counts[possible_grades[0]] * grade_counts[possible_grades[-1]] == 0:
-            raise "ERROR: must have at least one grade in the highest and lowest buckets to set the curve"
+            raise Exception("ERROR: must have at least one grade in the highest and lowest buckets to set the curve")
             
         num_scores = len(scores)
         scores.sort()
