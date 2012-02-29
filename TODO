@@ -1,0 +1,7 @@
+Things to consider:
+
+- Uni/bi-grams: 
+    - Different corpus?
+    - Different ordering of words for feature selection (i.e., instead of raw frequency)
+    - Better filtering of non-relevant words? (i.e., get rid of stop words, etc.)
+    - 
