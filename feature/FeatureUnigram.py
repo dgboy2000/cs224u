@@ -1,8 +1,13 @@
 import abc
 from FeatureBase import FeatureBase
 import nltk
-
-### TODO do something with data/corpus.pickle
+from nltk.collocations import *
+import Corpus
+import os
+import cPickle as pickle
+import params
+import numpy as np
+import LanguageUtils
 
 class FeatureUnigram(object):
 
@@ -18,17 +23,45 @@ class FeatureUnigram(object):
         """Returns string description of the feature type, such as 'real-valued', 'binary', 'enum', etc."""
         return self.type
 
-    def getFeatures(self, lineNum):
+    def getFeatureMatrix(self):
         """Returns ordered list of features."""
-        return
+        return self.features
 
     def extractFeatures(self, ds):
         """Extracts features from a DataSet ds"""
+
+        corpus = Corpus.Corpus()
+        corpus.setCorpus('kaggle')
+
+        unigram_scored_fname = 'cache/unigram_corpus_scored.pickle'
+        try:
+            f = open(unigram_scored_fname, 'rb')
+            print "Found Pickled <Unigram Corpus Scores>. Loading..."
+            scored = pickle.load(f)
+        except:
+            freqs = nltk.FreqDist(x.lower() for x in corpus.getWords()) # should we preserve case?
+            scored = freqs.items()
+            scored = [(word, score) for (word, score) in scored if not word in nltk.corpus.stopwords.words('english')]
+            pickle.dump(scored, open(unigram_scored_fname, 'wb'))
+
+        scored = scored[0:params.TOTAL_WORD_UNIGRAMS]
+        #print "Unigram features: "
+        #print scored
+
+        feats = list()
         for line in ds.getRawText():
-            print line
-            text = nltk.word_tokenize(line)
-            print nltk.pos_tag(text)
-            return
+            tokens = LanguageUtils.tokenize(line)
+
+            cur_feats = list()
+            for word, score in scored:
+                if word in tokens:
+                    cur_feats.append(1)
+                else:
+                    cur_feats.append(0)
+
+            feats.append(cur_feats)
+
+        self.features = np.asarray(feats)
         return
 
 FeatureBase.register(FeatureUnigram)

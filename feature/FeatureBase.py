@@ -15,8 +15,8 @@ class FeatureBase(object):
         return
 
     @abc.abstractmethod
-    def getFeatures(self, lineNum):
-        """Returns ordered list of features."""
+    def getFeatureMatrix(self):
+        """Return numpy matrix of features."""
         return
 
     @abc.abstractmethod

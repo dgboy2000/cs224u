@@ -1,8 +1,13 @@
 import abc
 from FeatureBase import FeatureBase
 import nltk
-
-### TODO do something with data/corpus.pickle
+from nltk.collocations import *
+import Corpus
+import os
+import cPickle as pickle
+import params
+import numpy as np
+import LanguageUtils
 
 class FeatureBigram(object):
 
@@ -18,12 +23,48 @@ class FeatureBigram(object):
         """Returns string description of the feature type, such as 'real-valued', 'binary', 'enum', etc."""
         return self.type
 
-    def getFeatures(self, lineNum):
+    def getFeatureMatrix(self):
         """Returns ordered list of features."""
-        return
+        return self.features
 
     def extractFeatures(self, ds):
         """Extracts features from a DataSet ds"""
+
+        # NLTK setup
+        bigram_measures = nltk.collocations.BigramAssocMeasures()
+
+        corpus = Corpus.Corpus()
+        corpus.setCorpus('kaggle')
+
+        bigram_scored_fname = 'cache/bigram_corpus_scored.pickle'
+        try:
+            f = open(bigram_scored_fname, 'rb')
+            print "Found Pickled <Bigram Corpus Scores>. Loading..."
+            scored = pickle.load(f)
+        except:
+            finder = BigramCollocationFinder.from_words(corpus.getWords())
+            scored = finder.score_ngrams(bigram_measures.raw_freq)
+            pickle.dump(scored, open(bigram_scored_fname, 'wb'))
+
+        scored = scored[0:params.TOTAL_WORD_BIGRAMS]
+
+        feats = list()
+        for line in ds.getRawText():
+            tokens = LanguageUtils.tokenize(line)
+            finder = BigramCollocationFinder.from_words(tokens)
+            cur_scored = finder.score_ngrams(bigram_measures.raw_freq)
+            bigram_tokens = sorted(bigram for bigram, score in cur_scored)
+
+            cur_feats = list()
+            for bigram, score in scored:
+                if bigram in bigram_tokens:
+                    cur_feats.append(1)
+                else:
+                    cur_feats.append(0)
+
+            feats.append(cur_feats)
+
+        self.features = np.asarray(feats)
         return
 
 FeatureBase.register(FeatureBigram)
