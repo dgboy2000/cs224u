@@ -1,13 +1,16 @@
 from FeatureBase import FeatureBase
 import nltk
 import numpy as np
-import re
-from spelling.SpellChecker import SpellChecker
+import os
+import pickle
+from spelling.CreateDictionary import CreateDictionary
+from spelling.WordCounter import WordCounter
 
 class FeatureSpelling(object):
 
-    spell_checker = SpellChecker()
-    word_splitter = re.compile("\\s+")
+    word_splitter = nltk.WordPunctTokenizer()
+    dictionary = CreateDictionary().getDictionary()
+    word_count = WordCounter().getWordCount()
 
     def __init__(self):
         self.features = np.array(())
@@ -30,13 +33,15 @@ class FeatureSpelling(object):
         lenfeats = list()
         for line in ds.getRawText():
             curfeat = list()
-            words = (FeatureSpelling.word_splitter.split(line)) 
+            words = FeatureSpelling.word_splitter.tokenize(line) 
+            words = [word.lower() for word in words]
+            words = [word for word in words if word.isalpha()]
             word_set = set(words)
+            word_set.discard('')
             misspelled_words = set()
 
             for word in word_set:
-                suggestions = FeatureSpelling.spell_checker.extractSpellingSuggestions(word) 
-                if suggestions is not None:
+                if not word in FeatureSpelling.dictionary:
                     misspelled_words.add(word)
 
             curfeat.append(len(misspelled_words))
