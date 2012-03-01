@@ -8,6 +8,7 @@
 
 #define ETA 0.03
 #define C 20.0
+#define epsilon 0.1
 
 // a * b
 double dot_product(double *a, double *b, int n) {
@@ -124,6 +125,30 @@ double compute_objective(double *w, double **features, int *grades, int num_samp
 }
 
 
+// Do an iteration of stochastic gradient descent and return the post-update objective function
+double stochastic_gradient_descent(double *w, double **features, int *grades, int num_samples, int num_features) {
+  double *scores = (double *)malloc(num_samples * sizeof(double));
+  int sample_ind, other_sample_ind;
+
+  for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
+    scores[sample_ind] = dot_product(w, features[sample_ind], num_features) + w[num_features];
+    for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
+      if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
+        vec_assign(w, w, 1-ETA, num_features);
+        vec_add(w, features[sample_ind], -C*ETA/(num_samples*num_samples), num_features);
+        vec_add(w, features[other_sample_ind], C*ETA/(num_samples*num_samples), num_features);
+      } else if (grades[sample_ind] > grades[other_sample_ind] && scores[sample_ind] < 1+scores[other_sample_ind]) {
+        vec_assign(w, w, 1-ETA, num_features);
+        vec_add(w, features[sample_ind], C*ETA/(num_samples*num_samples), num_features);
+        vec_add(w, features[other_sample_ind], -C*ETA/(num_samples*num_samples), num_features);
+      }
+    }
+  }
+  
+  return compute_objective(w, features, grades, num_samples, num_features);
+}
+
+
 // rank_svm data_file model_file
 int main(int argc, char *argv[]) {
   char *train_filename;
@@ -179,21 +204,7 @@ int main(int argc, char *argv[]) {
   fclose(fp);
   
   printf("Objective fcn before an iteration: %f\n", compute_objective(w, features, grades, num_samples, num_features));
-  for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
-    scores[sample_ind] = dot_product(w, features[sample_ind], num_features) + w[num_features];
-    for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
-      if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
-        vec_assign(w, w, 1-ETA, num_features);
-        vec_add(w, features[sample_ind], -C*ETA/(num_samples*num_samples), num_features);
-        vec_add(w, features[other_sample_ind], C*ETA/(num_samples*num_samples), num_features);
-      } else if (grades[sample_ind] > grades[other_sample_ind] && scores[sample_ind] < 1+scores[other_sample_ind]) {
-        vec_assign(w, w, 1-ETA, num_features);
-        vec_add(w, features[sample_ind], C*ETA/(num_samples*num_samples), num_features);
-        vec_add(w, features[other_sample_ind], -C*ETA/(num_samples*num_samples), num_features);
-      }
-    }
-  }
-  printf("Objective fcn after an iteration: %f\n", compute_objective(w, features, grades, num_samples, num_features));
+  printf("Objective fcn after an iteration: %f\n", stochastic_gradient_descent(w, features, grades, num_samples, num_features));
   
   
   // // Sort in ascending grade order to make SVM easier
