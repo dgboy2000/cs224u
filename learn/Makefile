@@ -1,7 +1,7 @@
 # Makefile for cs224u rank svm code
 
 CC=gcc
-CFLAGS= -g
+CFLAGS= -g -fnested-functions 
 LD=gcc
 LDFLAGS= -g
 
