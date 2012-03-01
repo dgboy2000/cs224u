@@ -39,14 +39,17 @@ class FeatureSpelling(object):
             word_set = set(words)
             word_set.discard('')
             misspelled_words = set()
+            total_word_frequency = 0
 
             for word in word_set:
                 if not word in FeatureSpelling.dictionary:
                     misspelled_words.add(word)
+                else:
+                    total_word_frequency += FeatureSpelling.word_count[word]
 
             curfeat.append(len(misspelled_words))
             curfeat.append(len(misspelled_words)/len(word_set)) 
-            
+            #curfeat.append(total_word_frequency / len(words))
             lenfeats.append(curfeat)
 
         self.features = np.asarray(lenfeats)
