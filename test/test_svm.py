@@ -7,7 +7,7 @@ import unittest
 class Test_svm(unittest.TestCase):
     """Test our rank svm implementation."""
 
-    def setUp():
+    def setUp(self):
         os.system('cd learn && make > /dev/null')
 
     def test_simple(self):
