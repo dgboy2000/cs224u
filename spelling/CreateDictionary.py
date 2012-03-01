@@ -25,7 +25,7 @@ class CreateDictionary:
 
     def extractCounts(self):
         word_list = list()
-        dictionary = list()
+        dictionary = set()
 
         for essay_set in range(1, 9): 
             ds_train = DataSet.DataSet()
@@ -48,7 +48,7 @@ class CreateDictionary:
 
         for word in word_set:
             if CreateDictionary.spell_checker.extractSpellingSuggestions(word) is None:
-                dictionary.append(word)
+                dictionary.add(word)
                 if len(dictionary)%100 is 0:
                     print len(dictionary)
 

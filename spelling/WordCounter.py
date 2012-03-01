@@ -23,8 +23,7 @@ class WordCounter:
                 word_list.append(word)
 
     def extractCounts(self):
-        dic_obj = CreateDictionary()
-        dictionary = dic_obj.getDictionary()
+        dictionary = CreateDictionary().getDictionary()
 
         word_counter = {}
 
