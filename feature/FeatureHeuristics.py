@@ -22,10 +22,6 @@ class FeatureHeuristics(object):
         """Returns string description of the feature type, such as 'real-valued', 'binary', 'enum', etc."""
         return self.type
 
-    def getInstanceFeatures(self, lineNum):
-        """Returns numpy array of features."""
-        return
-
     def getFeatureMatrix(self):
         """Returns numpy matrix of features"""
         return self.features

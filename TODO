@@ -1,0 +1,13 @@
+Better coding:
+    - Refactor 'kaggle.py' to be more general
+    - Use constants throughout all code for the data files (stop using the strings)
+    - Automatic creation of data/corpus.txt
+
+Things to consider:
+
+- Uni/bi-grams: 
+    - Different corpus?
+    - Different ordering of words for feature selection (i.e., instead of raw frequency)
+    - Better filtering of non-relevant words? (i.e., get rid of stop words, etc.)
+    - Check out better tokenization :: nltk.download() will get us nltk.data.load('tokenizers/punkt/english.pickle')
+- How to build a more general model using all of the entry sets, and not just learning on each set?

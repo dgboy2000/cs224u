@@ -1,5 +1,5 @@
 import DataSet
-from feature import FeatureHeuristics, FeatureSpelling, Utils
+from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram
 from learn import LinearRegression
 from score import KappaScore, MeanKappaScore
 
@@ -7,12 +7,20 @@ def extract(ds):
     feat = FeatureHeuristics.FeatureHeuristics()
     feat.extractFeatures(ds)
     
-    spelling_feat = FeatureSpelling.FeatureSpelling()
-    spelling_feat.extractFeatures(ds)
+    #spelling_feat = FeatureSpelling.FeatureSpelling()
+    #spelling_feat.extractFeatures(ds)
+
+    #bigram_feat = FeatureBigram.FeatureBigram()
+    #bigram_feat.extractFeatures(ds)
+
+    unigram_feat = FeatureUnigram.FeatureUnigram()
+    unigram_feat.extractFeatures(ds)
 
     all_feats = list()
     all_feats.append(feat)
-    all_feats.append(spelling_feat)
+    #all_feats.append(spelling_feat)
+    #all_feats.append(bigram_feat)
+    all_feats.append(unigram_feat)
 
     mat = Utils.combine_features(ds, all_feats)
     return mat
