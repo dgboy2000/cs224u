@@ -6,9 +6,9 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-#define ETA 0.03
-#define C 20.0
-#define epsilon 0.1
+#define ETA 0.000001
+#define C 100.0
+#define EPSILON 0.000001
 
 // a * b
 double dot_product(double *a, double *b, int n) {
@@ -27,13 +27,6 @@ void vec_add(double *a, double *b, double lambda, int n) {
 void vec_assign(double *a, double *b, double lambda, int n) {
   int i;
   for (i=0; i<n; ++i) a[i]=lambda*b[i];
-}
-
-
-void switch_ptrs(double ***a, double ***b) {
-  double **tmp = *a;
-  *a = *b;
-  *b = tmp;
 }
 
 void print_vec(double *a, int n) {
@@ -58,7 +51,6 @@ void deallocate(double **p, int x) {
   for (i=0; i<x; ++i) free(p[i]);
   free(p);
 }
-
 
 
 // Parse a data file header: num_samples<tab>num_features\n
@@ -104,13 +96,26 @@ void parse_row(const char *row, int *grade, double *features, int n) {
 }
 
 
+// Compute w * phi for every feature vector
+double *compute_scores(double *w, double **features, int num_samples, int num_features) {
+  double *scores = (double *)malloc(num_samples * sizeof(double));
+  int sample_ind, other_sample_ind;
+  
+  for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
+    scores[sample_ind] = dot_product(w, features[sample_ind], num_features);
+  }
+  
+  return scores;
+}
+
+
 double compute_objective(double *w, double **features, int *grades, int num_samples, int num_features) {
   double slack_sum = 0;
   double *scores = (double *)malloc(num_samples * sizeof(double));
   int sample_ind, other_sample_ind;
   
   for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
-    scores[sample_ind] = dot_product(w, features[sample_ind], num_features) + w[num_features];
+    scores[sample_ind] = dot_product(w, features[sample_ind], num_features);
     for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
       if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
         slack_sum += 1 + scores[sample_ind] - scores[other_sample_ind];
@@ -131,7 +136,7 @@ double stochastic_gradient_descent(double *w, double **features, int *grades, in
   int sample_ind, other_sample_ind;
 
   for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
-    scores[sample_ind] = dot_product(w, features[sample_ind], num_features) + w[num_features];
+    scores[sample_ind] = dot_product(w, features[sample_ind], num_features);
     for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
       if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
         vec_assign(w, w, 1-ETA, num_features);
@@ -144,50 +149,18 @@ double stochastic_gradient_descent(double *w, double **features, int *grades, in
       }
     }
   }
+  free(scores);
   
   return compute_objective(w, features, grades, num_samples, num_features);
 }
 
-
-// rank_svm data_file model_file
-int main(int argc, char *argv[]) {
-  char *train_filename;
-  char line[1024];
-  FILE *fp;
-  double **features;
-  int *grades;
-  int *sample_inds;
-  double *w;
-  double *scores; // w * phi for every feature vector phi
-  int num_features, num_samples;
-  int sample_ind, other_sample_ind, feature_ind;
-  int tmp;
-  double *cur_feature;
-  
-  if (argc != 3) {
-    printf("Usage: rank_svm data_file model_file\n");
-    printf("You entered %d args\n", argc);
-    return 0;
-  }
-  train_filename = argv[1];
-  
-  fp = fopen(train_filename, "r");
-  fgets(line, 1024, fp);
-  parse_header(line, &num_samples, &num_features);
-  
-  features = allocate(num_samples, num_features);
-  w = (double *)malloc((num_features + 1) * sizeof(double));
-  scores = (double *)malloc(num_samples * sizeof(double));
-  grades = (int *)malloc(num_samples * sizeof(int));
-  sample_inds = (int *)malloc(num_samples * sizeof(int));
-  
-  // Initialize w
-  for (feature_ind=0; feature_ind<num_features; ++feature_ind) {
-    w[feature_ind] = 0;
-  }
+// Return a list of indices that sorts the features into increasing-score order
+int *rank_features(double *w, double **features, int num_samples, int num_features) {
+  double *scores = compute_scores(w, features, num_samples, num_features);
+  int *sample_inds = (int *)malloc(num_samples * sizeof(int));
   
   int compare_samples(const void *ind_a, const void *ind_b) {
-    double temp = grades[*(int *)ind_a] - grades[*(int *)ind_b];
+    double temp = scores[*(int *)ind_a] - scores[*(int *)ind_b];
     if (temp > 0)
       return 1;
     else if (temp < 0)
@@ -195,29 +168,109 @@ int main(int argc, char *argv[]) {
     else
       return 0;
   }
+  qsort(sample_inds, num_samples, sizeof(int), compare_samples);
+  
+  free(scores);
+  
+  return sample_inds;
+}
+
+
+// rank_svm data_file model_file
+int main(int argc, char *argv[]) {
+  char *data_filename, *model_filename, *scores_filename;
+  char line[1024];
+  FILE *fp;
+  double **features;
+  int *grades;
+  double *w;
+  double *scores; // w * phi for every feature vector phi
+  int num_features, num_samples;
+  int sample_ind, other_sample_ind, feature_ind;
+  int tmp_int1, tmp_int2, iter_cnt;
+  double best_objective, cur_objective;
+  
+  if (argc == 3) {
+    printf("Training on %s, writing model to %s\n", argv[1], argv[2]);
+  } else if (argc == 4) {
+    printf("Evaluating on %s, using model %s, writing scores to %s\n", argv[1], argv[2], argv[3]);
+    scores_filename = argv[3];
+  } else {
+    printf("Usage: rank_svm data_file model_file OR rank_svm test_file model_file score_file\n");
+    printf("You entered %d args\n", argc);
+    return 0;
+  }
+  data_filename = argv[1];
+  model_filename = argv[2];
+  
+  fp = fopen(data_filename, "r");
+  fgets(line, 1024, fp);
+  parse_header(line, &num_samples, &num_features);
+  
+  features = allocate(num_samples, num_features);
+  w = (double *)malloc(num_features * sizeof(double));
+  scores = (double *)malloc(num_samples * sizeof(double));
+  grades = (int *)malloc(num_samples * sizeof(int));
   
   for (sample_ind=0; sample_ind < num_samples; ++sample_ind) {
     fgets(line, 1024, fp);
     parse_row(line, grades+sample_ind, features[sample_ind], num_features);
-    sample_inds[sample_ind] = sample_ind;
   }
   fclose(fp);
   
-  printf("Objective fcn before an iteration: %f\n", compute_objective(w, features, grades, num_samples, num_features));
-  printf("Objective fcn after an iteration: %f\n", stochastic_gradient_descent(w, features, grades, num_samples, num_features));
+
+  if (argc == 3) {
+    // Train
+    for (feature_ind=0; feature_ind<num_features; ++feature_ind) {
+      w[feature_ind] = 0;
+    }
+    
+    iter_cnt = 0;
+    best_objective = cur_objective = compute_objective(w, features, grades, num_samples, num_features);
+    printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
+
+    cur_objective = stochastic_gradient_descent(w, features, grades, num_samples, num_features);
+    ++iter_cnt;
+    printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
+    while (cur_objective < best_objective - EPSILON) {
+      best_objective = cur_objective;
+      cur_objective = stochastic_gradient_descent(w, features, grades, num_samples, num_features);
+      ++iter_cnt;
+      printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
+    }
+    
+    fp = fopen(model_filename, "w");
+    fprintf(fp, "1\t%d\n", num_features);
+    fprintf(fp, "0");
+    for (feature_ind=0; feature_ind<num_features; ++feature_ind) {
+      fprintf(fp, "\t%f", w[feature_ind]);
+    }
+    fprintf(fp, "\n");
+    fclose(fp);
+  } else if (argc == 4) {
+    // Test
+    fp = fopen(model_filename, "r");
+    fgets(line, 1024, fp);
+    parse_header(line, &tmp_int1, &tmp_int2);
+    if (tmp_int2 != num_features) {
+      printf("ERROR: model has %d features, data has %d\n", tmp_int2, num_features);
+      return 1;
+    }
   
+    fgets(line, 1024, fp);
+    parse_row(line, &tmp_int1, w, num_features);
+      
+    fclose(fp);
+    
+    scores = compute_scores(w, features, num_samples, num_features);
+    fp = fopen(scores_filename, "w");
+    for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
+      fprintf(fp, "%f\n", scores[sample_ind]);
+    }
+    fclose(fp);
+  }
   
-  // // Sort in ascending grade order to make SVM easier
-  // qsort(sample_inds, num_samples, sizeof(int), compare_samples);
-  // for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
-  //   tmp = grades[sample_ind];
-  //   grades[sample_ind] = sample_inds[sample_ind] - ;
-  // }
-  
-  
-  free(sample_inds);
   free(grades);
-  free(scores);
   free(w);
   deallocate(features, num_samples);
   
