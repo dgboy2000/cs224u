@@ -10,7 +10,7 @@ class FeatureSpelling(object):
 
     word_splitter = nltk.WordPunctTokenizer()
     dictionary = CreateDictionary().getDictionary()
-    word_count = WordCounter().getWordCount()
+    word_count = WordCounter().getCounts()
 
     def __init__(self):
         self.features = np.array(())

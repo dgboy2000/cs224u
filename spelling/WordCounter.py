@@ -10,11 +10,17 @@ class WordCounter:
     word_splitter = nltk.WordPunctTokenizer()
 
     def __init__(self):
-        if not os.path.exists(word_counter_fn)
-            extractCounts()
+        if not os.path.exists(WordCounter.word_counter_fn):
+            self.extractCounts()
 
     def getCounts(self):
-        return pickle.load(open(word_counter_fn, 'r'))
+        return pickle.load(open(WordCounter.word_counter_fn, 'r'))
+
+    def addValidWords(self, ds, word_list):
+        for line in ds.getRawText():            
+            newWords = [word.lower() for word in WordCounter.word_splitter.tokenize(line) if word.isalpha()]
+            for word in newWords:
+                word_list.append(word)
 
     def extractCounts(self):
         dic_obj = CreateDictionary()
@@ -35,24 +41,13 @@ class WordCounter:
             ds_val.importData('data/c_val.tsv', essay_set)
             ds_val.setTrainSet(False)
 
-            for line in ds_train.getRawText():
-                for word in word_splitter.tokenize(line):
-                    if word in dictionary:
-                        word_counter[word] += 1
-
-            for line in ds_val.getRawText():        
-                for word in word_splitter.tokenize(line):
-                    if word in dictionary:
-                        word_counter[word] += 1
+            self.addValidWords(ds_train, word_list)
+            self.addValidWords(ds_val, word_list)
 
         print 'importing real validation set'
         ds_val = DataSet.DataSet()
         ds_val.importData('data/valid_set.tsv')
         ds_val.setTrainSet(False)
+        self.addValidWords(ds_val, word_list)
 
-        for line in ds_val.getRawText():        
-            for word in word_splitter.tokenize(line):
-                if word in dictionary:
-                    word_counter[word] += 1
-
-        pickle.dump(word_counter, open(word_counter_fn, 'w'))
+        pickle.dump(word_counter, open(WordCounter.word_counter_fn, 'w'))
