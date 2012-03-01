@@ -1,3 +1,4 @@
+from curve import Curve
 import numpy
 from scipy import linalg
 
@@ -35,46 +36,16 @@ class LinearRegression:
         
     def grade(self, x):
         """Return an integer grade for x"""
-        score = self.predict(x)
-        grade = self.min_grade
-        for cutoff_score in self.cutoff_scores:
-            if score < cutoff_score:
-                return grade
-            grade += 1
-        return self.max_grade
+        return self.curve.curve(self.predict(x))
         
     def grade_by_rounding(self, x, min_grade, max_grade):
         score = self.predict(x)
         grade = int(round(score))
         return max(min(max_grade, grade), min_grade)
-        
+            
     def set_curve(self, scores, grade_counts):
-        """Find the score cutoffs that separate each of the different possible grades."""
-        possible_grades = grade_counts.keys()
-        possible_grades.sort()
-        last_grade = possible_grades[0]
-        for grade in possible_grades[1:]:
-            for i in range(last_grade + 1, grade):
-                grade_counts[i] = 0
-                print "WARNING: did not specify count for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
-            last_grade = grade
-        self.min_grade = possible_grades[0]
-        self.max_grade = possible_grades[-1]
-        
-        if len(scores) != sum(grade_counts.values()):
-            raise Exception("ERROR: found %d scores and %d grades; must be same number" %(len(scores), sum(grade_counts.values())))
-        if grade_counts[possible_grades[0]] * grade_counts[possible_grades[-1]] == 0:
-            raise Exception("ERROR: must have at least one grade in the highest and lowest buckets to set the curve")
-            
-        num_scores = len(scores)
-        scores.sort()
-        num_lower_scores = 0
-        self.cutoff_scores = []
-        for grade in possible_grades[:-1]:
-            num_lower_scores += grade_counts[grade]
-            self.cutoff_scores.append(float(scores[num_lower_scores-1] + scores[num_lower_scores]) / 2)
-            
-            
+        """Set curve with histogram."""
+        self.curve = Curve(scores, histogram=grade_counts)
             
             
             
