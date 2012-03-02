@@ -7,8 +7,8 @@ class Test_linear_regression(unittest.TestCase):
     def test_solve(self):
         X = [[1, 0], [0, 2]]
         Y = [3, 2];
-        lr = LinearRegression(X, Y)
-        lr.solve()
+        lr = LinearRegression()
+        lr.train(X, Y)
         self.assertFalse(lr.has_intercept)
         self.assertAlmostEqual(3, lr.params[0])
         self.assertAlmostEqual(1, lr.params[1])
@@ -16,8 +16,8 @@ class Test_linear_regression(unittest.TestCase):
         
         X = [[1, 0], [0, 2], [0, 3]]
         Y = [3, 2, 1];
-        lr = LinearRegression(X, Y)
-        lr.solve(intercept=True)
+        lr = LinearRegression(intercept=True)
+        lr.train(X, Y)
         self.assertTrue(lr.has_intercept)
         self.assertAlmostEqual(-1, lr.params[0])
         self.assertAlmostEqual(-1, lr.params[1])
@@ -27,8 +27,8 @@ class Test_linear_regression(unittest.TestCase):
     def test_predict(self):
         X = [[1, 0], [0, 2]]
         Y = [3, 2];
-        lr = LinearRegression(X, Y)
-        lr.solve()
+        lr = LinearRegression()
+        lr.train(X, Y)
         
         self.assertAlmostEqual(3, lr.predict([1,0]))
         self.assertAlmostEqual(4, lr.predict([1,1]))

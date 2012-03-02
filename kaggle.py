@@ -28,17 +28,9 @@ def extract(ds):
 def learn(ds, mat):
     grades = ds.getGrades()
 
-    lr = LinearRegression(mat, grades)
-    lr.solve(intercept = True)
+    lr = LinearRegression(intercept = True)
+    lr.train(mat, grades)
     
-    scores = [lr.predict(mat[i,:]) for i in range(mat.shape[0])]
-    grade_counts = {}
-    for grade in grades:
-        if grade not in grade_counts:
-            grade_counts[grade] = 0
-        grade_counts[grade] += 1
-    
-    lr.set_curve(scores, grade_counts)
     return lr
 
 def eval(mat, lr, ds):

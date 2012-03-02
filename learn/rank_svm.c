@@ -134,18 +134,19 @@ double compute_objective(double *w, double **features, int *grades, int num_samp
 double stochastic_gradient_descent(double *w, double **features, int *grades, int num_samples, int num_features) {
   double *scores = (double *)malloc(num_samples * sizeof(double));
   int sample_ind, other_sample_ind;
+  double step_size = C*ETA/pow(num_samples, 2);
 
   for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
     scores[sample_ind] = dot_product(w, features[sample_ind], num_features);
     for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
       if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
         vec_assign(w, w, 1-ETA, num_features);
-        vec_add(w, features[sample_ind], -C*ETA/(num_samples*num_samples), num_features);
-        vec_add(w, features[other_sample_ind], C*ETA/(num_samples*num_samples), num_features);
+        vec_add(w, features[sample_ind], -step_size, num_features);
+        vec_add(w, features[other_sample_ind], step_size, num_features);
       } else if (grades[sample_ind] > grades[other_sample_ind] && scores[sample_ind] < 1+scores[other_sample_ind]) {
         vec_assign(w, w, 1-ETA, num_features);
-        vec_add(w, features[sample_ind], C*ETA/(num_samples*num_samples), num_features);
-        vec_add(w, features[other_sample_ind], -C*ETA/(num_samples*num_samples), num_features);
+        vec_add(w, features[sample_ind], step_size, num_features);
+        vec_add(w, features[other_sample_ind], -step_size, num_features);
       }
     }
   }
