@@ -42,7 +42,7 @@ class Test_svm(unittest.TestCase):
         num_grades = 15
         grades, features = self.simpleTestGradesAndFeatures(num_grades)
         features = numpy.asarray(features)
-        svm.train_rank_svm(features, grades)
+        svm.train(features, grades)
         scores = [(ind, float(score)) for ind,score in enumerate(svm.classify_rank_svm(features))]
         scores.sort(key=lambda tup: tup[1])
         ranking = [tup[0] for tup in scores]

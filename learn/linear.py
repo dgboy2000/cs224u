@@ -33,9 +33,9 @@ class LinearRegression(object):
 
         self.set_curve(scores, grade_counts)
 
-    def grade(self, feature_vec):
-        """Return an integer grade for feature_vec"""
-        return self.curve.curve(self.predict(feature_vec))
+    def grade(self, features):
+        """Return an integer grade for each feature vector in the specified array"""
+        return [self.curve.curve(self.predict(features[i, :])) for i in range(features.shape[0])]
             
     def predict(self, x):
         """Predict y_hat given x"""

@@ -13,7 +13,7 @@ class SVM:
     
     def __init__(self):
         pass
-    def train_rank_svm(self, features, grades):
+    def train(self, features, grades):
         """Train a rank_svm on the specified features and grades.
         train_rank_svm(self, features, grades):
         
@@ -43,26 +43,30 @@ class SVM:
         scores = self.classify_rank_svm(features)
         self.curve = Curve(scores, probs=self.grade_probs)
         
+    def grade(self, features):
+        scores = self.classify_rank_svm(features)
+        return [self.curve.curve(score) for score in scores]
+        
     def classify_rank_svm(self, features):
         """Run rank_svm to rank the specified essay features (numpy matrix/array).
         Returns a vector of scores of the specified essays."""
         num_essays, num_features = features.shape
-        
+
         f = open(SVM.test_file, 'w')
         f.write("%d\t%d\n" %(num_essays, num_features))
         for essay_ind in range(num_essays):
             feature_str = "\t".join([str(feat) for feat in features[essay_ind, :]])
             f.write("0\t%s\n" %feature_str)
         f.close()
-        
+
         os.system('learn/rank_svm %s %s %s > /dev/null' %(SVM.test_file, SVM.model_file, SVM.predictions_file))
-        
+
         f = open(SVM.predictions_file)
         scores = [float(score) for score in f.readlines()]
         f.close()
-        
+
         return scores
-        
+
         # scores = [(ind, float(score)) for ind,score in enumerate(scores)]
         # scores.sort(key = lambda tup: tup[1]) # Sort in increasing rank order = decreasing score order
         # rankings = [0] * num_essays
@@ -71,12 +75,7 @@ class SVM:
         #     rankings[ind] = cur_rank
         #     cur_rank += 1
         #     
-        # return rankings
-        
-    def grade(self, feature):
-        score = self.classify_rank_svm(np.reshape(feature, (1, len(feature))))
-        return self.curve.curve(score)
-            
+        # return rankings    
             
             
             

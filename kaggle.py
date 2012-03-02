@@ -1,6 +1,6 @@
 import DataSet
 from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram
-from learn import LinearRegression
+from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 
 def extract(ds):
@@ -28,15 +28,16 @@ def extract(ds):
 def learn(ds, mat):
     grades = ds.getGrades()
 
-    lr = LinearRegression(intercept = True)
-    lr.train(mat, grades)
+    # learner = LinearRegression(intercept = True)
+    learner = SVM()
+    learner.train(mat, grades)
     
-    return lr
+    return learner
 
-def eval(mat, lr, ds):
+def eval(mat, learner, ds):
     grades = ds.getGrades()
-    # predicted_grades = [lr.grade_by_rounding(mat[i,:], min(grades), max(grades)) for i in range(mat.shape[0])]
-    predicted_grades = [lr.grade(mat[i,:]) for i in range(mat.shape[0])]
+    # predicted_grades = [learner.grade_by_rounding(mat[i,:], min(grades), max(grades)) for i in range(mat.shape[0])]
+    predicted_grades = learner.grade(mat)
 
     kappa = KappaScore(grades, predicted_grades)
     print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
@@ -70,28 +71,28 @@ print "Overall Train / Test"
 print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
 print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
 
-def run_test(essay_set, domain_id, fd):
-    ds_train = DataSet.DataSet()
-    ds_train.importData('data/training_set_rel3.tsv', essay_set, domain_id)
-    ds_train.setTrainSet(True)
-
-    ds_test = DataSet.DataSet()
-    ds_test.importData('data/valid_set.tsv', essay_set, domain_id)
-    ds_test.setTrainSet(False)
-
-    if (ds_train.size() > 0 and ds_test.size() > 0):
-        mat_train = extract(ds_train)
-        mat_test = extract(ds_test)
-
-        model = learn(ds_train, mat_train)
-
-        predicted_grades = [model.grade(mat_test[i,:]) for i in range(mat_test.shape[0])]
-
-        ds_test.outputKaggle(predicted_grades, fd)
-
-fd = open('data/kaggle_out.tsv', 'w')
-fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
-for essay_set in range(1, 9):
-    run_test(essay_set, 1, fd)
-run_test(2, 2, fd) # essay set 2 is the only one with domain 2 scores
+# def run_test(essay_set, domain_id, fd):
+#     ds_train = DataSet.DataSet()
+#     ds_train.importData('data/training_set_rel3.tsv', essay_set, domain_id)
+#     ds_train.setTrainSet(True)
+# 
+#     ds_test = DataSet.DataSet()
+#     ds_test.importData('data/valid_set.tsv', essay_set, domain_id)
+#     ds_test.setTrainSet(False)
+# 
+#     if (ds_train.size() > 0 and ds_test.size() > 0):
+#         mat_train = extract(ds_train)
+#         mat_test = extract(ds_test)
+# 
+#         model = learn(ds_train, mat_train)
+# 
+#         predicted_grades = [model.grade(mat_test[i,:]) for i in range(mat_test.shape[0])]
+# 
+#         ds_test.outputKaggle(predicted_grades, fd)
+# 
+# fd = open('data/kaggle_out.tsv', 'w')
+# fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
+# for essay_set in range(1, 9):
+#     run_test(essay_set, 1, fd)
+# run_test(2, 2, fd) # essay set 2 is the only one with domain 2 scores
 
