@@ -4,7 +4,7 @@ import os
 import sys
 
 class SVM:
-    """Python interface to SVM light."""
+    """Python interface to rank SVM c code."""
     tmp_path = '/tmp'
     data_file = os.path.join(tmp_path, 'svm_rank_features.dat')
     model_file = os.path.join(tmp_path, 'svm_rank_model.dat')
@@ -14,7 +14,7 @@ class SVM:
     def __init__(self):
         pass
     def train_rank_svm(self, features, grades):
-        """Train a rank_svm with svm light on the specified features and grades.
+        """Train a rank_svm on the specified features and grades.
         train_rank_svm(self, features, grades):
         
         features - numpy array/matrix with one row per essay
@@ -22,16 +22,16 @@ class SVM:
         """
         self.min_grade = min(grades)
         self.max_grade = max(grades)
-        essay_ranks = [self.max_grade - grade + 1 for grade in grades]
-        num_essays = len(grades)
+        num_essays, num_features = features.shape
         
         f = open(SVM.data_file, 'w')
+        f.write("%d\t%d\n" %(num_essays, num_features))
         for essay_ind in range(num_essays):
-            feature_str = " ".join(["%d:%f" %(i+1,feat) for i,feat in enumerate(features[essay_ind, :])])
-            f.write("%d qid:1 %s\n" %(essay_ranks[essay_ind], feature_str))
+            feature_str = "\t".join([str(feat) for feat in features[essay_ind, :]])
+            f.write("%d\t%s\n" %(grades[essay_ind], feature_str))
         f.close()
         
-        os.system('svm/svm_rank_learn -c 20.0 %s %s > /dev/null' %(SVM.data_file, SVM.model_file))
+        os.system('learn/rank_svm %s %s > /dev/null' %(SVM.data_file, SVM.model_file))
         
         # Set a curve based on the SVM ranking scores
         grade_counts = {}
@@ -45,16 +45,17 @@ class SVM:
         
     def classify_rank_svm(self, features):
         """Run rank_svm to rank the specified essay features (numpy matrix/array).
-        Returns a vector of rankings of the specified essays."""
-        num_essays = features.shape[0]
+        Returns a vector of scores of the specified essays."""
+        num_essays, num_features = features.shape
         
         f = open(SVM.test_file, 'w')
+        f.write("%d\t%d\n" %(num_essays, num_features))
         for essay_ind in range(num_essays):
-            feature_str = " ".join(["%d:%f" %(i+1,feat) for i,feat in enumerate(features[essay_ind, :])])
-            f.write("0 qid:1 %s\n" %feature_str)
+            feature_str = "\t".join([str(feat) for feat in features[essay_ind, :]])
+            f.write("0\t%s\n" %feature_str)
         f.close()
         
-        os.system('svm/svm_rank_classify %s %s %s > /dev/null' %(SVM.test_file, SVM.model_file, SVM.predictions_file))
+        os.system('learn/rank_svm %s %s %s > /dev/null' %(SVM.test_file, SVM.model_file, SVM.predictions_file))
         
         f = open(SVM.predictions_file)
         scores = [float(score) for score in f.readlines()]

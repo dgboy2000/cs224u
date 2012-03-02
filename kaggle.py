@@ -13,14 +13,14 @@ def extract(ds):
     #bigram_feat = FeatureBigram.FeatureBigram()
     #bigram_feat.extractFeatures(ds)
 
-    unigram_feat = FeatureUnigram.FeatureUnigram()
-    unigram_feat.extractFeatures(ds)
+    # unigram_feat = FeatureUnigram.FeatureUnigram()
+    # unigram_feat.extractFeatures(ds)
 
     all_feats = list()
     all_feats.append(feat)
     #all_feats.append(spelling_feat)
     #all_feats.append(bigram_feat)
-    all_feats.append(unigram_feat)
+    # all_feats.append(unigram_feat)
 
     mat = Utils.combine_features(ds, all_feats)
     return mat
@@ -43,7 +43,7 @@ def learn(ds, mat):
 
 def eval(mat, lr, ds):
     grades = ds.getGrades()
-    #predicted_grades = [lr.grade_by_rounding(mat[i,:], min(grades), max(grades)) for i in range(mat.shape[0])]
+    # predicted_grades = [lr.grade_by_rounding(mat[i,:], min(grades), max(grades)) for i in range(mat.shape[0])]
     predicted_grades = [lr.grade(mat[i,:]) for i in range(mat.shape[0])]
 
     kappa = KappaScore(grades, predicted_grades)
