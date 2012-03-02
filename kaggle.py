@@ -7,8 +7,8 @@ def extract(ds):
     feat = FeatureHeuristics.FeatureHeuristics()
     feat.extractFeatures(ds)
     
-    #spelling_feat = FeatureSpelling.FeatureSpelling()
-    #spelling_feat.extractFeatures(ds)
+    spelling_feat = FeatureSpelling.FeatureSpelling()
+    spelling_feat.extractFeatures(ds)
 
     #bigram_feat = FeatureBigram.FeatureBigram()
     #bigram_feat.extractFeatures(ds)
@@ -18,7 +18,7 @@ def extract(ds):
 
     all_feats = list()
     all_feats.append(feat)
-    #all_feats.append(spelling_feat)
+    all_feats.append(spelling_feat)
     #all_feats.append(bigram_feat)
     # all_feats.append(unigram_feat)
 
