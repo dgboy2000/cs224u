@@ -1,9 +1,9 @@
-import DataSet
+import DataSet, Corpus
 from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 
-def extract(ds):
+def extract(ds, corpus):
     feat = FeatureHeuristics.FeatureHeuristics()
     feat.extractFeatures(ds)
     
@@ -11,16 +11,16 @@ def extract(ds):
     spelling_feat.extractFeatures(ds)
 
     #bigram_feat = FeatureBigram.FeatureBigram()
-    #bigram_feat.extractFeatures(ds)
+    #bigram_feat.extractFeatures(ds, corpus)
 
-    # unigram_feat = FeatureUnigram.FeatureUnigram()
-    # unigram_feat.extractFeatures(ds)
+    unigram_feat = FeatureUnigram.FeatureUnigram()
+    unigram_feat.extractFeatures(ds, corpus)
 
     all_feats = list()
     all_feats.append(feat)
     all_feats.append(spelling_feat)
     #all_feats.append(bigram_feat)
-    # all_feats.append(unigram_feat)
+    all_feats.append(unigram_feat)
 
     mat = Utils.combine_features(ds, all_feats)
     return mat
@@ -28,8 +28,8 @@ def extract(ds):
 def learn(ds, mat):
     grades = ds.getGrades()
 
-    # learner = LinearRegression(intercept = True)
-    learner = SVM()
+    learner = LinearRegression(intercept = True)
+    #learner = SVM()
     learner.train(mat, grades)
     
     return learner
@@ -51,14 +51,19 @@ for essay_set in range(1, 9):
     ds_train = DataSet.DataSet()
     ds_train.importData('data/c_train.tsv', essay_set)
     ds_train.setTrainSet(True)
+    ds_train.setID('c_rand')
 
     ds_val = DataSet.DataSet()
     ds_val.importData('data/c_val.tsv', essay_set)
     ds_val.setTrainSet(False)
+    ds_val.setID('c_rand')
+
+    corpus = Corpus.Corpus()
+    corpus.setCorpus('ds', ds_train)
 
     if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
-        mat_train = extract(ds_train)
-        mat_val = extract(ds_val)
+        mat_train = extract(ds_train, corpus)
+        mat_val = extract(ds_val, corpus)
 
         model = learn(ds_train, mat_train)
 
@@ -71,28 +76,38 @@ print "Overall Train / Test"
 print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
 print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
 
-# def run_test(essay_set, domain_id, fd):
-#     ds_train = DataSet.DataSet()
-#     ds_train.importData('data/training_set_rel3.tsv', essay_set, domain_id)
-#     ds_train.setTrainSet(True)
-# 
-#     ds_test = DataSet.DataSet()
-#     ds_test.importData('data/valid_set.tsv', essay_set, domain_id)
-#     ds_test.setTrainSet(False)
-# 
-#     if (ds_train.size() > 0 and ds_test.size() > 0):
-#         mat_train = extract(ds_train)
-#         mat_test = extract(ds_test)
-# 
-#         model = learn(ds_train, mat_train)
-# 
-#         predicted_grades = [model.grade(mat_test[i,:]) for i in range(mat_test.shape[0])]
-# 
-#         ds_test.outputKaggle(predicted_grades, fd)
-# 
-# fd = open('data/kaggle_out.tsv', 'w')
-# fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
-# for essay_set in range(1, 9):
-#     run_test(essay_set, 1, fd)
-# run_test(2, 2, fd) # essay set 2 is the only one with domain 2 scores
+def run_test(essay_set, domain_id, fd):
+    ds_train = DataSet.DataSet()
+    ds_train.importData('data/training_set_rel3.tsv', essay_set, domain_id)
+    ds_train.setTrainSet(True)
+    ds_train.setID('full_kaggle')
+
+    ds_test = DataSet.DataSet()
+    ds_test.importData('data/valid_set.tsv', essay_set, domain_id)
+    ds_test.setTrainSet(False)
+    ds_test.setID('full_kaggle')
+
+    corpus = Corpus.Corpus()
+    corpus.setCorpus('ds', ds_train)
+
+    if (ds_train.size() > 0 and ds_test.size() > 0):
+        mat_train = extract(ds_train, corpus)
+        mat_test = extract(ds_test, corpus)
+
+        model = learn(ds_train, mat_train)
+
+        predicted_grades = model.grade(mat_test)
+
+        ds_test.outputKaggle(predicted_grades, fd)
+
+# Hi - please don't uncomment the function above. If you don't want to run this, just set the following flag to false.
+
+RUN_KAGGLE = False
+
+if RUN_KAGGLE:
+    fd = open('data/kaggle_out.tsv', 'w')
+    fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
+    for essay_set in range(1, 9):
+        run_test(essay_set, 1, fd)
+    run_test(2, 2, fd) # essay set 2 is the only one with domain 2 scores
 

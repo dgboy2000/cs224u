@@ -27,16 +27,13 @@ class FeatureBigram(object):
         """Returns ordered list of features."""
         return self.features
 
-    def extractFeatures(self, ds):
+    def extractFeatures(self, ds, corpus):
         """Extracts features from a DataSet ds"""
 
         # NLTK setup
         bigram_measures = nltk.collocations.BigramAssocMeasures()
 
-        corpus = Corpus.Corpus()
-        corpus.setCorpus('kaggle')
-
-        bigram_scored_fname = 'cache/bigram_corpus_scored.pickle'
+        bigram_scored_fname = 'cache/bigram_corpus_scored.set%d.pickle' % ds.getEssaySet()
         try:
             f = open(bigram_scored_fname, 'rb')
             print "Found Pickled <Bigram Corpus Scores>. Loading..."

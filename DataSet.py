@@ -11,6 +11,7 @@
 
 import csv
 import numpy as np
+import os
 
 class DataSet:
     def __init__(self):
@@ -23,6 +24,13 @@ class DataSet:
         self.prediction_ids = list()
         self.essay_ids = list()
         self.essay_set = None
+        self.file_id = 'default'
+
+    def getID(self):
+        return self.file_id
+
+    def setID(self, file_id):
+        self.file_id = file_id
 
     def importData(self, filename, essay_set=-1, domain_id=1):
         """If essay_set=-1, then we use all essays."""
@@ -87,6 +95,9 @@ class DataSet:
 
     def getRawText(self):
         return self.textOnly
+
+    def getEssaySet(self):
+        return self.essay_set
 
     def outputKaggle(self, grades, fd):
         """Output standard Kaggle validation set format. file will be appended to."""

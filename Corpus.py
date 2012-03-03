@@ -14,13 +14,28 @@ class Corpus:
     def getWords(self):
         return self.corpus
 
-    def setCorpus(self, type):
+    def setCorpus(self, type, ds=None, ds2=None):
         if type == 'english-web':
             self.corpus = nltk.corpus.genesis.words('english-web.txt')
-        if type == 'kaggle':
+        elif type == 'kaggle':
             self.corpus = self.getKaggleCorpus()
+        elif type == 'ds':
+            self.corpus = self.getFromDataSet(ds, ds2)
         else:
             raise Exception('Corpus does not exist.')
+
+    def getFromDataSet(self, ds, ds2=None):
+        text = ''
+        for line in ds.getRawText():
+            text += line
+
+        if ds2:
+            for line in ds2.getRawText():
+                text += line
+
+        tokens = LanguageUtils.tokenize(text)
+
+        return tokens
 
     def getKaggleCorpus(self):
         f = open('data/corpus.txt')

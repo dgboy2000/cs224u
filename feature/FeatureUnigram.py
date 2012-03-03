@@ -27,13 +27,10 @@ class FeatureUnigram(object):
         """Returns ordered list of features."""
         return self.features
 
-    def extractFeatures(self, ds):
+    def extractFeatures(self, ds, corpus):
         """Extracts features from a DataSet ds"""
 
-        corpus = Corpus.Corpus()
-        corpus.setCorpus('kaggle')
-
-        unigram_scored_fname = 'cache/unigram_corpus_scored.pickle'
+        unigram_scored_fname = 'cache/unigram_corpus_scored.%s.set%d.pickle' % (ds.getID(), ds.getEssaySet())
         try:
             f = open(unigram_scored_fname, 'rb')
             print "Found Pickled <Unigram Corpus Scores>. Loading..."
@@ -46,7 +43,7 @@ class FeatureUnigram(object):
 
         scored = scored[0:params.TOTAL_WORD_UNIGRAMS]
         #print "Unigram features: "
-        #print scored
+        print scored
 
         feats = list()
         for line in ds.getRawText():
