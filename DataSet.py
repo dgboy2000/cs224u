@@ -12,6 +12,9 @@
 import csv
 import numpy as np
 import os
+import LanguageUtils
+import nltk
+import cPickle as pickle
 
 class DataSet:
     def __init__(self):
@@ -25,6 +28,8 @@ class DataSet:
         self.essay_ids = list()
         self.essay_set = None
         self.file_id = 'default'
+        self.file_name = ''
+        self.pos_tags = list()
 
     def getID(self):
         return self.file_id
@@ -36,6 +41,7 @@ class DataSet:
         """If essay_set=-1, then we use all essays."""
         reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar='"')
         first = True
+        self.file_name = os.path.basename(filename)
 
         self.domain_id = domain_id
         self.essay_set = essay_set
@@ -79,6 +85,36 @@ class DataSet:
                         self.prediction_ids.append(int(row[pred_id_col]))
 
         return
+
+    def getPOS(self):
+        if len(self.pos_tags) > 0:
+            return self.pos_tags
+
+        fname = 'cache/pos.%s.set%d.pickle' % (self.file_name, self.essay_set)
+        try:
+            f = open(fname, 'rb')
+            self.pos_tags = pickle.load(f)
+        except:
+            pos_lines = list()
+            tot_ln = self.size()
+            prog = 0
+            hunpos = nltk.tag.HunposTagger("en_wsj.model")
+
+            for line in self.getRawText():
+                tokens = LanguageUtils.tokenize(line)
+                pos_tags = hunpos.tag(tokens)
+                tags_only = [tag for w, tag in pos_tags]
+                pos_lines.append(tags_only)
+                prog += 1
+                if prog % 100 == 0:
+                    print "POS Tagging %d of %d" % (prog, tot_ln)
+
+                self.pos_tags = pos_lines
+
+            f = open(fname, 'w')
+            pickle.dump(self.pos_tags, f)
+
+        return self.pos_tags
 
     def setTrainSet(self, val):
         self.isTrainSet = val

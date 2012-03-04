@@ -1,0 +1,5 @@
+To get Hunpos tagger to work:
+
+* Download http://hunpos.googlecode.com/files/hunpos-1.0-macosx.tgz
+* Extract the tar, and put the executables in ~/bin/
+
