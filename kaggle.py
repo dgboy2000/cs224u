@@ -1,5 +1,5 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram
+from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 
@@ -13,6 +13,9 @@ def extract(ds, corpus):
     #bigram_feat = FeatureBigram.FeatureBigram()
     #bigram_feat.extractFeatures(ds, corpus)
 
+    #bigram_pos_feat = FeaturePOSBigram.FeaturePOSBigram()
+    #bigram_pos_feat.extractFeatures(ds, corpus)
+
     unigram_feat = FeatureUnigram.FeatureUnigram()
     unigram_feat.extractFeatures(ds, corpus)
 
@@ -23,6 +26,7 @@ def extract(ds, corpus):
     all_feats.append(feat)
     all_feats.append(spelling_feat)
     #all_feats.append(bigram_feat)
+    #all_feats.append(bigram_pos_feat)
     all_feats.append(unigram_feat)
     all_feats.append(unigram_pos_feat)
 
@@ -40,7 +44,6 @@ def learn(ds, mat):
 
 def eval(mat, learner, ds):
     grades = ds.getGrades()
-    # predicted_grades = [learner.grade_by_rounding(mat[i,:], min(grades), max(grades)) for i in range(mat.shape[0])]
     predicted_grades = learner.grade(mat)
 
     kappa = KappaScore(grades, predicted_grades)
@@ -52,29 +55,34 @@ train_mean_kappa = MeanKappaScore()
 val_mean_kappa = MeanKappaScore()
 
 for essay_set in range(1, 9):
-    ds_train = DataSet.DataSet()
-    ds_train.importData('data/c_train.tsv', essay_set)
-    ds_train.setTrainSet(True)
-    ds_train.setID('c_rand')
+    total_domains = 1
+    if essay_set == 2:
+        total_domains = 2
 
-    ds_val = DataSet.DataSet()
-    ds_val.importData('data/c_val.tsv', essay_set)
-    ds_val.setTrainSet(False)
-    ds_val.setID('c_rand')
+    for domain in range(1, total_domains+1):
+        ds_train = DataSet.DataSet()
+        ds_train.importData('data/c_train.tsv', essay_set=essay_set, domain_id=domain)
+        ds_train.setTrainSet(True)
+        ds_train.setID('c_rand')
 
-    corpus = Corpus.Corpus()
-    corpus.setCorpus('ds', ds_train)
+        ds_val = DataSet.DataSet()
+        ds_val.importData('data/c_val.tsv', essay_set=essay_set, domain_id=domain)
+        ds_val.setTrainSet(False)
+        ds_val.setID('c_rand')
 
-    if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
-        mat_train = extract(ds_train, corpus)
-        mat_val = extract(ds_val, corpus)
+        corpus = Corpus.Corpus()
+        corpus.setCorpus('ds', ds_train)
 
-        model = learn(ds_train, mat_train)
+        if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
+            mat_train = extract(ds_train, corpus)
+            mat_val = extract(ds_val, corpus)
 
-        print "Train / Test"
-        train_mean_kappa.add(eval(mat_train, model, ds_train))
-        val_mean_kappa.add(eval(mat_val, model, ds_val))
-        print "--\n"
+            model = learn(ds_train, mat_train)
+
+            print "Train / Test (Essay Set #%d, Domain #%d)" % (essay_set, domain)
+            train_mean_kappa.add(eval(mat_train, model, ds_train))
+            val_mean_kappa.add(eval(mat_val, model, ds_val))
+            print "--\n"
 
 print "Overall Train / Test"
 print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
