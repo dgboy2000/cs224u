@@ -42,8 +42,6 @@ class FeatureUnigram(object):
             pickle.dump(scored, open(unigram_scored_fname, 'wb'))
 
         scored = scored[0:params.TOTAL_WORD_UNIGRAMS]
-        #print "Unigram features: "
-        print scored
 
         feats = list()
         for line in ds.getRawText():

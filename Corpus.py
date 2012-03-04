@@ -10,9 +10,13 @@ CORPUS_CACHE = True
 class Corpus:
     def __init__(self):
         self.corpus = list()
+        self.pos_corpus = list()
 
     def getWords(self):
         return self.corpus
+
+    def getPOS(self):
+        return self.pos_corpus
 
     def setCorpus(self, type, ds=None, ds2=None):
         if type == 'english-web':
@@ -20,7 +24,7 @@ class Corpus:
         elif type == 'kaggle':
             self.corpus = self.getKaggleCorpus()
         elif type == 'ds':
-            self.corpus = self.getFromDataSet(ds, ds2)
+            self.getFromDataSet(ds, ds2)
         else:
             raise Exception('Corpus does not exist.')
 
@@ -33,9 +37,17 @@ class Corpus:
             for line in ds2.getRawText():
                 text += line
 
-        tokens = LanguageUtils.tokenize(text)
+        self.corpus = LanguageUtils.tokenize(text)
 
-        return tokens
+        pos_corpus = list()
+        for line in ds.getPOS():
+            pos_corpus += line
+
+        if ds2:
+            for line in ds2.getPOS():
+                pos_corpus += line
+
+        self.pos_corpus = pos_corpus
 
     def getKaggleCorpus(self):
         f = open('data/corpus.txt')

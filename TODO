@@ -14,6 +14,13 @@ Things to consider:
 
 
 
+
+Try modeling individual graders
+Look at x/y plot of projected 1-dimensional feature vs grades for each grader
+fix kaggle.py to be better
+output ranked in order of how badly we predict.
+
+
 Learning ideas:
 
 TODO:
@@ -24,3 +31,4 @@ tune parameters
 Ideas:
 cross validation framework to set SVM parameters
 non-linear kernel
+
