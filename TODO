@@ -11,3 +11,16 @@ Things to consider:
     - Better filtering of non-relevant words? (i.e., get rid of stop words, etc.)
     - Check out better tokenization :: nltk.download() will get us nltk.data.load('tokenizers/punkt/english.pickle')
 - How to build a more general model using all of the entry sets, and not just learning on each set?
+
+
+
+Learning ideas:
+
+TODO:
+anneal eta down per cs246
+take command line parameter options a la svm light
+tune parameters
+
+Ideas:
+cross validation framework to set SVM parameters
+non-linear kernel
