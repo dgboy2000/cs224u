@@ -27,8 +27,10 @@ TODO:
 anneal eta down per cs246
 take command line parameter options a la svm light
 tune parameters
+do I need to update w for even the pairs of points with zero slack?
 
 Ideas:
-cross validation framework to set SVM parameters
+cross validation framework to set SVM parameters. specify validation set, svm tries a few parameter settings and picks the best one on the validation data
 non-linear kernel
+numerical optimization of learning: save last 3 parameter vectors and objective scores, take a quadratic Newton-descent type step
 

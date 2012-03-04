@@ -9,7 +9,7 @@ class LearnerBase(object):
         return
 
     @abc.abstractmethod
-    def grade(self, features):
+    def grade(self, features, options={}):
         """Return an integer grade for each feature vector in the specified array."""
         return
 

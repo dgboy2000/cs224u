@@ -43,7 +43,7 @@ class SVM:
         scores = self.classify_rank_svm(features)
         self.curve = Curve(scores, probs=self.grade_probs)
         
-    def grade(self, features):
+    def grade(self, features, options={}):
         scores = self.classify_rank_svm(features)
         return [self.curve.curve(score) for score in scores]
         

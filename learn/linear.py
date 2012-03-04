@@ -33,8 +33,12 @@ class LinearRegression(object):
 
         self.set_curve(scores, grade_counts)
 
-    def grade(self, features):
+    def grade(self, features, options={}):
         """Return an integer grade for each feature vector in the specified array"""
+        if "round" in options and not options["round"]:
+            min_grade = min(self.grades)
+            max_grade = max(self.grades)
+            return [self.grade_by_rounding(self.predict(features[i, :]), min_grade, max_grade) for i in range(features.shape[0])]
         return [self.curve.curve(self.predict(features[i, :])) for i in range(features.shape[0])]
             
     def predict(self, x):
