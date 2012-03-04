@@ -22,7 +22,7 @@ class Curve:
         for grade in possible_grades[1:]:
             for i in range(last_grade + 1, grade):
                 grade_counts[i] = 0
-                print "WARNING: did not specify count for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
+                #print "WARNING: did not specify count for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
             last_grade = grade
         self.min_grade = possible_grades[0]
         self.max_grade = possible_grades[-1]
@@ -48,7 +48,7 @@ class Curve:
         for grade in possible_grades[1:]:
             for i in range(last_grade + 1, grade):
                 grade_probs[i] = 0
-                print "WARNING: did not specify prob for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
+                #print "WARNING: did not specify prob for grade %d; only saw these grades: %s" %(last_grade + 1, str(possible_grades))
             last_grade = grade
         self.min_grade = possible_grades[0]
         self.max_grade = possible_grades[-1]

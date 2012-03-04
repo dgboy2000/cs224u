@@ -1,5 +1,5 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram
+from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 
@@ -13,6 +13,9 @@ def extract(ds, corpus):
     #bigram_feat = FeatureBigram.FeatureBigram()
     #bigram_feat.extractFeatures(ds, corpus)
 
+    #bigram_pos_feat = FeaturePOSBigram.FeaturePOSBigram()
+    #bigram_pos_feat.extractFeatures(ds, corpus)
+
     unigram_feat = FeatureUnigram.FeatureUnigram()
     unigram_feat.extractFeatures(ds, corpus)
 
@@ -23,6 +26,7 @@ def extract(ds, corpus):
     all_feats.append(feat)
     all_feats.append(spelling_feat)
     #all_feats.append(bigram_feat)
+    #all_feats.append(bigram_pos_feat)
     all_feats.append(unigram_feat)
     all_feats.append(unigram_pos_feat)
 

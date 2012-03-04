@@ -101,7 +101,7 @@ class DataSet:
             hunpos = nltk.tag.HunposTagger("en_wsj.model")
 
             for line in self.getRawText():
-                tokens = LanguageUtils.tokenize(line)
+                tokens = LanguageUtils.punkt_tokenize(line)
                 pos_tags = hunpos.tag(tokens)
                 tags_only = [tag for w, tag in pos_tags]
                 pos_lines.append(tags_only)
