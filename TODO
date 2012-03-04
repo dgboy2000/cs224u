@@ -13,6 +13,9 @@ Things to consider:
 - How to build a more general model using all of the entry sets, and not just learning on each set?
 
 Try modeling individual graders
-Look at x/y plot of projected 1-dimensional feature vs grades for each grader
 fix kaggle.py to be better
-output ranked in order of how badly we predict.
+
+DATA EXPLORATION TODOs:
+- output ranked in order of how badly we predict
+- look at distribution of scores/grades
+- Look at x/y plot of projected 1-dimensional feature vs grades for each grader
