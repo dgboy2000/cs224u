@@ -10,3 +10,5 @@ $ cd gensim-0.8.3
 $ python setup.py test
 $ sudo python setup.py install
 
+To convert data to UTF-8:
+iconv -f WINDOWS-1252 -t "UTF-8//IGNORE" training_set_rel3.tsv > training_set_rel3.utf8ignore.tsv

@@ -23,8 +23,8 @@ def extract(ds, corpus):
     #unigram_feat = FeatureUnigram.FeatureUnigram()
     #unigram_feat.extractFeatures(ds, corpus)
 
-    #unigram_pos_feat = FeaturePOSUnigram.FeaturePOSUnigram()
-    #unigram_pos_feat.extractFeatures(ds, corpus)
+    unigram_pos_feat = FeaturePOSUnigram.FeaturePOSUnigram()
+    unigram_pos_feat.extractFeatures(ds, corpus)
 
     lsi_feat = FeatureLSI.FeatureLSI()
     lsi_feat.extractFeatures(ds, corpus)
@@ -37,7 +37,7 @@ def extract(ds, corpus):
     #all_feats.append(bigram_feat)
     #all_feats.append(bigram_pos_feat)
     #all_feats.append(unigram_feat)
-    #all_feats.append(unigram_pos_feat)
+    all_feats.append(unigram_pos_feat)
 
     mat = Utils.combine_features(ds, all_feats)
     return mat
@@ -83,12 +83,12 @@ for essay_set in range(1, 9):
 
     for domain in range(1, total_domains+1):
         ds_train = DataSet.DataSet()
-        ds_train.importData('data/c_train.tsv', essay_set=essay_set, domain_id=domain)
+        ds_train.importData('data/c_train.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
         ds_train.setTrainSet(True)
         ds_train.setID('c_rand')
 
         ds_val = DataSet.DataSet()
-        ds_val.importData('data/c_val.tsv', essay_set=essay_set, domain_id=domain)
+        ds_val.importData('data/c_val.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
         ds_val.setTrainSet(False)
         ds_val.setID('c_rand')
 
@@ -113,12 +113,12 @@ print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
 
 def run_test(essay_set, domain_id, fd):
     ds_train = DataSet.DataSet()
-    ds_train.importData('data/training_set_rel3.tsv', essay_set, domain_id)
+    ds_train.importData('data/training_set_rel3.utf8ignore.tsv', essay_set, domain_id)
     ds_train.setTrainSet(True)
     ds_train.setID('full_kaggle')
 
     ds_test = DataSet.DataSet()
-    ds_test.importData('data/valid_set.tsv', essay_set, domain_id)
+    ds_test.importData('data/valid_set.utf8ignore.tsv', essay_set, domain_id)
     ds_test.setTrainSet(False)
     ds_test.setID('full_kaggle')
 

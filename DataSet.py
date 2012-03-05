@@ -43,7 +43,7 @@ class DataSet:
 
     def importData(self, filename, essay_set=-1, domain_id=1):
         """If essay_set=-1, then we use all essays."""
-        reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar='"')
+        reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar=None)
         first = True
         self.file_name = os.path.basename(filename)
 
@@ -80,7 +80,7 @@ class DataSet:
             else:
                 if essay_set < 0 or int(row[essay_set_col]) == essay_set:
                     self.rows.append(row)
-                    self.textOnly.append(row[text_col])
+                    self.textOnly.append(row[text_col].strip('"'))
                     self.essay_ids.append(int(row[essay_id_col]))
 
                     if grade_col > -1:
