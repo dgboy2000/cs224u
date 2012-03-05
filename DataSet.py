@@ -21,7 +21,7 @@ class DataSet:
         self.colNames = list()
         self.rows = list() # dataset is a matrix - one level deep of nested lists
         self.textOnly = list() # just a list of the text
-        self.isTrainSet = False
+        self.trainSetFlag = False
         self.domain_id = 1
         self.grades = list()
         self.prediction_ids = list()
@@ -117,8 +117,11 @@ class DataSet:
         return self.pos_tags
 
     def setTrainSet(self, val):
-        self.isTrainSet = val
+        self.trainSetFlag = val
         return
+
+    def isTrainSet(self):
+        return self.trainSetFlag
 
     def size(self):
         return len(self.rows)
@@ -134,6 +137,9 @@ class DataSet:
 
     def getEssaySet(self):
         return self.essay_set
+
+    def getDomain(self):
+        return self.domain_id
 
     def outputKaggle(self, grades, fd):
         """Output standard Kaggle validation set format. file will be appended to."""
