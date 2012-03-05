@@ -19,6 +19,9 @@ class Corpus:
         self.corpus = list()
         self.pos_corpus = list()
         self.lsi = None
+        self.tfidf = None
+        self.pos_tfidf = None
+        self.pos_lsi = None
 
     def getWords(self):
         return self.corpus
@@ -56,6 +59,33 @@ class Corpus:
                 pos_corpus += line
 
         self.pos_corpus = pos_corpus
+
+    def genPOS_LSA(self, ds1, ds2):
+        print "Loading all POS tags"
+        documents = list()
+        ds1_pos_tags = ds1.getPOS()
+        ds1_bigram_pos_tags = ds1.getBigramPOS()
+        ds1_trigram_pos_tags = ds1.getTrigramPOS()
+        for i in range(ds1.size()):
+            documents.append(ds1_pos_tags[i] + ds1.bigram_pos_tags[i] + ds1.trigram_pos_tags[i])
+        ds2_pos_tags = ds2.getPOS()
+        ds2_bigram_pos_tags = ds2.getBigramPOS()
+        ds2_trigram_pos_tags = ds2.getTrigramPOS()
+        for i in range(ds2.size()):
+            documents.append(ds2_pos_tags[i] + ds2.bigram_pos_tags[i] + ds2_trigram_pos_tags[i])
+
+        print "Loaded all POS tags"
+
+        # TODO remove single appearances?
+
+        dictionary = gensim.corpora.Dictionary(documents)
+        mm_corpus = [dictionary.doc2bow(doc) for doc in documents]
+        self.pos_tfidf = gensim.models.TfidfModel(mm_corpus)
+
+        ds1.setGensimPOSCorpus(mm_corpus[0:ds1.size()])
+        ds2.setGensimPOSCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
+
+        self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS)
 
     def genLSA(self, ds1, ds2):
         documents = list()
@@ -108,5 +138,11 @@ class Corpus:
     def getLSA(self):
         return self.lsi
 
+    def getPOS_LSA(self):
+        return self.pos_lsi
+
     def getTfidf(self):
         return self.tfidf
+
+    def getPOS_Tfidf(self):
+        return self.pos_tfidf

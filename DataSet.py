@@ -15,6 +15,7 @@ import os
 import LanguageUtils
 import nltk
 import cPickle as pickle
+from nltk.collocations import *
 
 class DataSet:
     def __init__(self):
@@ -30,6 +31,8 @@ class DataSet:
         self.file_id = 'default'
         self.file_name = ''
         self.pos_tags = list()
+        self.bigram_pos_tags = list()
+        self.trigram_pos_tags = list()
         self.gensim_corpus = ()
 
     def getID(self):
@@ -120,6 +123,48 @@ class DataSet:
 
         return self.pos_tags
 
+    def getBigramPOS(self):
+        if len(self.bigram_pos_tags) > 0:
+            return self.bigram_pos_tags
+
+        bigram_measures = nltk.collocations.BigramAssocMeasures()
+
+        bigram_tags = list()
+        for tokens in self.pos_tags:
+            finder = BigramCollocationFinder.from_words(tokens)
+            cur_scored = finder.score_ngrams(bigram_measures.pmi)
+
+            bigrams = list()
+            for bigram, score in cur_scored:
+                bigrams.append(bigram)
+
+            bigram_tags.append(bigrams)
+
+        self.bigram_pos_tags = bigram_tags
+
+        return self.bigram_pos_tags
+
+    def getTrigramPOS(self):
+        if len(self.trigram_pos_tags) > 0:
+            return self.trigram_pos_tags
+
+        trigram_measures = nltk.collocations.TrigramAssocMeasures()
+
+        trigram_tags = list()
+        for tokens in self.pos_tags:
+            finder = TrigramCollocationFinder.from_words(tokens)
+            cur_scored = finder.score_ngrams(trigram_measures.pmi)
+
+            trigrams = list()
+            for trigram, score in cur_scored:
+                trigrams.append(trigram)
+
+            trigram_tags.append(trigrams)
+
+        self.trigram_pos_tags = trigram_tags
+
+        return self.trigram_pos_tags
+
     def setTrainSet(self, val):
         self.trainSetFlag = val
         return
@@ -141,6 +186,12 @@ class DataSet:
 
     def getGensimCorpus(self):
         return self.gensim_corpus
+
+    def setGensimPOSCorpus(self, mm):
+        self.gensim_pos_corpus = mm
+
+    def getGensimPOSCorpus(self):
+        return self.gensim_pos_corpus
 
     def getRawText(self):
         return self.textOnly
