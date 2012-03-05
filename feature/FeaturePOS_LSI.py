@@ -37,6 +37,11 @@ class FeaturePOS_LSI(object):
             cur_feat = list()
             for topic, score in lsi[tfidf[mm]]:
                 cur_feat.append(score)
+
+            if len(cur_feat) != params.POS_LSI_TOPICS:
+                print "NON-MATCHING FEATURE LENGTH...POS LSI"
+                import pdb;pdb.set_trace()
+
             feats.append(cur_feat)
 
         self.features = np.asarray(feats)
