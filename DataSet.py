@@ -30,12 +30,16 @@ class DataSet:
         self.file_id = 'default'
         self.file_name = ''
         self.pos_tags = list()
+        self.gensim_corpus = ()
 
     def getID(self):
         return self.file_id
 
     def setID(self, file_id):
         self.file_id = file_id
+
+    def getFilename(self):
+        return self.file_name
 
     def importData(self, filename, essay_set=-1, domain_id=1):
         """If essay_set=-1, then we use all essays."""
@@ -131,6 +135,12 @@ class DataSet:
 
     def dumpRow(self, lineNum):
         print '\n'.join(self.rows[lineNum])
+
+    def setGensimCorpus(self, mm):
+        self.gensim_corpus = mm
+
+    def getGensimCorpus(self):
+        return self.gensim_corpus
 
     def getRawText(self):
         return self.textOnly

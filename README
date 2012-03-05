@@ -3,3 +3,10 @@ To get Hunpos tagger to work:
 * Download http://hunpos.googlecode.com/files/hunpos-1.0-macosx.tgz
 * Extract the tar, and put the executables in ~/bin/
 
+Install 'gensim':
+$ wget http://pypi.python.org/packages/source/g/gensim/gensim-0.8.3.tar.gz
+$ tar xzvf http://pypi.python.org/packages/source/g/gensim/gensim-0.8.3.tar.gz
+$ cd gensim-0.8.3
+$ python setup.py test
+$ sudo python setup.py install
+

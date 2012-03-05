@@ -1,5 +1,5 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 import math
@@ -20,20 +20,24 @@ def extract(ds, corpus):
     #bigram_pos_feat = FeaturePOSBigram.FeaturePOSBigram()
     #bigram_pos_feat.extractFeatures(ds, corpus)
 
-    unigram_feat = FeatureUnigram.FeatureUnigram()
-    unigram_feat.extractFeatures(ds, corpus)
+    #unigram_feat = FeatureUnigram.FeatureUnigram()
+    #unigram_feat.extractFeatures(ds, corpus)
 
-    unigram_pos_feat = FeaturePOSUnigram.FeaturePOSUnigram()
-    unigram_pos_feat.extractFeatures(ds, corpus)
+    #unigram_pos_feat = FeaturePOSUnigram.FeaturePOSUnigram()
+    #unigram_pos_feat.extractFeatures(ds, corpus)
+
+    lsi_feat = FeatureLSI.FeatureLSI()
+    lsi_feat.extractFeatures(ds, corpus)
 
     all_feats = list()
     all_feats.append(feat)
     all_feats.append(spelling_feat)
     all_feats.append(transitions_feat)
+    all_feats.append(lsi_feat)
     #all_feats.append(bigram_feat)
     #all_feats.append(bigram_pos_feat)
-    all_feats.append(unigram_feat)
-    all_feats.append(unigram_pos_feat)
+    #all_feats.append(unigram_feat)
+    #all_feats.append(unigram_pos_feat)
 
     mat = Utils.combine_features(ds, all_feats)
     return mat
@@ -89,7 +93,8 @@ for essay_set in range(1, 9):
         ds_val.setID('c_rand')
 
         corpus = Corpus.Corpus()
-        corpus.setCorpus('ds', ds_train)
+        corpus.setCorpus('ds', ds_train, ds_val)
+        corpus.genLSA(ds_train, ds_val)
 
         if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
             mat_train = extract(ds_train, corpus)
@@ -118,7 +123,8 @@ def run_test(essay_set, domain_id, fd):
     ds_test.setID('full_kaggle')
 
     corpus = Corpus.Corpus()
-    corpus.setCorpus('ds', ds_train)
+    corpus.setCorpus('ds', ds_train, ds_test)
+    corpus.genLSA(ds_train, ds_test)
 
     if (ds_train.size() > 0 and ds_test.size() > 0):
         mat_train = extract(ds_train, corpus)
@@ -126,7 +132,10 @@ def run_test(essay_set, domain_id, fd):
 
         model = learn(ds_train, mat_train)
 
-        predicted_grades = model.grade(mat_test)
+        round = False
+        if ds_train.getEssaySet() == 8:
+            round = True
+        predicted_grades = model.grade(mat_test, {'round': round})
 
         ds_test.outputKaggle(predicted_grades, fd)
 

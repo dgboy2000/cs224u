@@ -2,7 +2,7 @@ import nltk
 
 def tokenize(text):
     tokens = nltk.tokenize.WhitespaceTokenizer().tokenize(text)
-    tokens = [w.strip(',.@:"') for w in tokens]
+    tokens = [w.strip(',.@:"!?/()*').lower() for w in tokens]
     return tokens
 
 def punkt_tokenize(text):
