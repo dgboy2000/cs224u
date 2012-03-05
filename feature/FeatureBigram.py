@@ -40,7 +40,7 @@ class FeatureBigram(object):
             scored = pickle.load(f)
         except:
             finder = BigramCollocationFinder.from_words(corpus.getWords())
-            scored = finder.score_ngrams(bigram_measures.raw_freq)
+            scored = finder.score_ngrams(bigram_measures.pmi)  # used to be raw_freq
             pickle.dump(scored, open(bigram_scored_fname, 'wb'))
 
         scored = scored[0:params.TOTAL_WORD_BIGRAMS]
@@ -49,7 +49,7 @@ class FeatureBigram(object):
         for line in ds.getRawText():
             tokens = LanguageUtils.tokenize(line)
             finder = BigramCollocationFinder.from_words(tokens)
-            cur_scored = finder.score_ngrams(bigram_measures.raw_freq)
+            cur_scored = finder.score_ngrams(bigram_measures.pmi) # used to be raw_freq
             bigram_tokens = sorted(bigram for bigram, score in cur_scored)
 
             cur_feats = list()

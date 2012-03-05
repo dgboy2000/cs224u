@@ -40,7 +40,7 @@ class FeaturePOSBigram(object):
             scored = pickle.load(f)
         except:
             finder = BigramCollocationFinder.from_words(corpus.getPOS())
-            scored = finder.score_ngrams(bigram_measures.raw_freq)
+            scored = finder.score_ngrams(bigram_measures.pmi)
             pickle.dump(scored, open(bigram_scored_fname, 'wb'))
 
         scored = scored[0:params.TOTAL_POS_BIGRAMS]
@@ -48,7 +48,7 @@ class FeaturePOSBigram(object):
         feats = list()
         for tokens in ds.getPOS():
             finder = BigramCollocationFinder.from_words(tokens)
-            cur_scored = finder.score_ngrams(bigram_measures.raw_freq)
+            cur_scored = finder.score_ngrams(bigram_measures.pmi)
 
             bigram_scores = dict()
             for bigram, score in cur_scored:
