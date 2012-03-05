@@ -2,6 +2,7 @@ import DataSet, Corpus
 from feature import FeatureHeuristics, FeatureSpelling, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
+import math
 
 def extract(ds, corpus):
     feat = FeatureHeuristics.FeatureHeuristics()
@@ -44,10 +45,23 @@ def learn(ds, mat):
 
 def eval(mat, learner, ds):
     grades = ds.getGrades()
-    predicted_grades = learner.grade(mat)
+    round = False
+    if ds.getEssaySet() == 8:
+        round = True
+    predicted_grades = learner.grade(mat, {'round': round})
 
     kappa = KappaScore(grades, predicted_grades)
     print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
+
+    if not ds.isTrainSet():
+        i = 0
+        lines = ds.getRawText()
+        f = open('output/val.set%d.domain%d.tsv' % (ds.getEssaySet(), ds.getDomain()), 'w')
+        for grade in grades:
+            pgrade = predicted_grades[i]
+            line = lines[i]
+            f.write('%d\t%d\t%d\t%s\n' % (math.fabs(pgrade-grade), grade, pgrade, line))
+            i+=1
 
     return kappa
 
