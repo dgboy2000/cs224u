@@ -131,22 +131,32 @@ double compute_objective(double *w, double **features, int *grades, int num_samp
 
 
 // Do an iteration of stochastic gradient descent and return the post-update objective function
-double stochastic_gradient_descent(double *w, double **features, int *grades, int num_samples, int num_features) {
+double stochastic_gradient_descent(double *w, double **features, int *grades, int *num_updates, int num_samples, int num_features) {
   double *scores = (double *)malloc(num_samples * sizeof(double));
   int sample_ind, other_sample_ind;
-  double step_size = C*ETA/pow(num_samples, 2);
+  double t0;
+  double step_size, base_step_size;
+  
+  t0 = pow(num_samples, 2);
+  base_step_size = C*ETA;
+  step_size = base_step_size / t0;
+  
 
   for (sample_ind=0; sample_ind<num_samples; ++sample_ind) {
     scores[sample_ind] = dot_product(w, features[sample_ind], num_features);
     for (other_sample_ind=0; other_sample_ind<sample_ind; ++other_sample_ind) {
       if (grades[sample_ind] < grades[other_sample_ind] && scores[sample_ind]+1 > scores[other_sample_ind]) {
-        vec_assign(w, w, 1-ETA, num_features);
+        // step_size = base_step_size / (t0 + *num_updates);
+        vec_assign(w, w, 1-ETA/t0, num_features);
         vec_add(w, features[sample_ind], -step_size, num_features);
         vec_add(w, features[other_sample_ind], step_size, num_features);
+        ++(*num_updates);
       } else if (grades[sample_ind] > grades[other_sample_ind] && scores[sample_ind] < 1+scores[other_sample_ind]) {
-        vec_assign(w, w, 1-ETA, num_features);
+        // step_size = base_step_size / (t0 + *num_updates);
+        vec_assign(w, w, 1-ETA/t0, num_features);
         vec_add(w, features[sample_ind], step_size, num_features);
         vec_add(w, features[other_sample_ind], -step_size, num_features);
+        ++(*num_updates);
       }
     }
   }
@@ -188,7 +198,7 @@ int main(int argc, char *argv[]) {
   double *scores; // w * phi for every feature vector phi
   int num_features, num_samples;
   int sample_ind, other_sample_ind, feature_ind;
-  int tmp_int1, tmp_int2, iter_cnt;
+  int tmp_int1, tmp_int2, iter_cnt, num_updates;
   double best_objective, cur_objective;
   
   if (argc == 3) {
@@ -212,6 +222,7 @@ int main(int argc, char *argv[]) {
   w = (double *)malloc(num_features * sizeof(double));
   scores = (double *)malloc(num_samples * sizeof(double));
   grades = (int *)malloc(num_samples * sizeof(int));
+  num_updates = 0;
   
   for (sample_ind=0; sample_ind < num_samples; ++sample_ind) {
     fgets(line, 1024, fp);
@@ -230,12 +241,12 @@ int main(int argc, char *argv[]) {
     best_objective = cur_objective = compute_objective(w, features, grades, num_samples, num_features);
     printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
 
-    cur_objective = stochastic_gradient_descent(w, features, grades, num_samples, num_features);
+    cur_objective = stochastic_gradient_descent(w, features, grades, &num_updates, num_samples, num_features);
     ++iter_cnt;
     printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
     while (cur_objective < best_objective - EPSILON) {
       best_objective = cur_objective;
-      cur_objective = stochastic_gradient_descent(w, features, grades, num_samples, num_features);
+      cur_objective = stochastic_gradient_descent(w, features, grades, &num_updates, num_samples, num_features);
       ++iter_cnt;
       printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
     }
