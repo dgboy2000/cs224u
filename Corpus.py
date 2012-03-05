@@ -8,7 +8,9 @@ import logging, gensim, bz2
 import cPickle as pickle
 from collections import Counter
 import params
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+if params.DEBUG:
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 CORPUS_CACHE = True
 
@@ -56,9 +58,6 @@ class Corpus:
         self.pos_corpus = pos_corpus
 
     def genLSA(self, ds1, ds2):
-        print "Generating LSA..."
-
-        print "Create documents list..."
         documents = list()
         for line in ds1.getRawText():
             documents.append(LanguageUtils.tokenize(line))
@@ -66,7 +65,6 @@ class Corpus:
             documents.append(LanguageUtils.tokenize(line))
 
         # Remove stop words
-        print "Removing stop words..."
         i = 0
         size = len(documents)
         texts = list()
@@ -97,15 +95,18 @@ class Corpus:
         #dictionary.save(TODO)
 
         mm_corpus = [dictionary.doc2bow(text) for text in texts]
+        self.tfidf = gensim.models.TfidfModel(mm_corpus)
 
         # split into two corpii (haha) and ds?.setGensimCorpus(mm)
         ds1.setGensimCorpus(mm_corpus[0:ds1.size()])
         ds2.setGensimCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
 
-        #tfidf = gensim.models.TfidfModel(overall_corpus)
-        self.lsi = gensim.models.LsiModel(mm_corpus, num_topics=params.LSI_TOPICS)
+        self.lsi = gensim.models.LsiModel(self.tfidf[mm_corpus], id2word=dictionary, num_topics=params.LSI_TOPICS)
         # For some reason can't use this interchangeably:
-        #   self.lsi = gensim.models.LdaModel(corpus=mm_corpus, num_topics=params.LSI_TOPICS)
+        #   self.lsi = gensim.models.LdaModel(corpus=tfidf, num_topics=params.LSI_TOPICS)
 
     def getLSA(self):
         return self.lsi
+
+    def getTfidf(self):
+        return self.tfidf
