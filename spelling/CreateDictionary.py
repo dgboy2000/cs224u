@@ -12,10 +12,10 @@ class CreateDictionary:
 
     def __init__(self):
         if not os.path.exists(CreateDictionary.dictionary_fn):
-            self.extractCounts();
+            self.extractCounts()
 
     def getDictionary(self):
-        return pickle.load(open(CreateDictionary.dictionary_fn))
+        return pickle.load(open(CreateDictionary.dictionary_fn, 'r'))
 
     def addValidWords(self, ds, word_list):
         for line in ds.getRawText():
@@ -52,4 +52,4 @@ class CreateDictionary:
                 if len(dictionary)%100 is 0:
                     print len(dictionary)
 
-        pickle.dump(dictionary, open(CreateDictionary.dictionary_fn))
+        pickle.dump(dictionary, open(CreateDictionary.dictionary_fn, 'w'))
