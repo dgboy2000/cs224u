@@ -61,20 +61,11 @@ class Corpus:
         self.pos_corpus = pos_corpus
 
     def genPOS_LSA(self, ds1, ds2):
-        print "Loading all POS tags"
         documents = list()
-        ds1_pos_tags = ds1.getPOS()
-        ds1_bigram_pos_tags = ds1.getBigramPOS()
-        ds1_trigram_pos_tags = ds1.getTrigramPOS()
-        for i in range(ds1.size()):
-            documents.append(ds1_pos_tags[i] + ds1.bigram_pos_tags[i] + ds1.trigram_pos_tags[i])
-        ds2_pos_tags = ds2.getPOS()
-        ds2_bigram_pos_tags = ds2.getBigramPOS()
-        ds2_trigram_pos_tags = ds2.getTrigramPOS()
-        for i in range(ds2.size()):
-            documents.append(ds2_pos_tags[i] + ds2.bigram_pos_tags[i] + ds2_trigram_pos_tags[i])
-
-        print "Loaded all POS tags"
+        for tags in ds1.getAllPOS():
+            documents.append(tags)
+        for tags in ds2.getAllPOS():
+            documents.append(tags)
 
         # TODO remove single appearances?
 

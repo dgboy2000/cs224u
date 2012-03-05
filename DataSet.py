@@ -93,6 +93,32 @@ class DataSet:
 
         return
 
+    #def getAllBoW(self):
+    #    """Return unigram, bigram words as bag of words."""
+    #    bow = list()
+    #    for line in self.getRawText():
+    #        cur = LanguageUtils.tokenize(line)
+
+    def getAllPOS(self):
+        """Return unigram, bigram, trigram POS tags as bag of words."""
+
+        fname = 'cache/pos_ngrams.%s.set%d.dom%d.pickle' % ( 
+                 self.getFilename(), self.getEssaySet(), self.getDomain())
+        try:
+            f = open(fname, 'rb')
+            all = pickle.load(f)
+        except:
+            uni = self.getPOS()
+            bi = self.getBigramPOS()
+            tri = self.getTrigramPOS()
+            all = list()
+            for i in range(self.size()):
+                all.append(uni[i] + bi[i] + tri[i])
+
+            pickle.dump(all, open(fname, 'w'))
+
+        return all
+
     def getPOS(self):
         if len(self.pos_tags) > 0:
             return self.pos_tags
