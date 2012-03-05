@@ -134,7 +134,7 @@ double compute_objective(double *w, double **features, int *grades, int num_samp
 // Take a well-sized step in the specified gradient direction and return the final objective value
 double take_gradient_step(double *w, double *grad, double eta, double **features, int *grades, int num_samples, int num_features) {
   double *new_w = (double *)malloc(num_samples * sizeof(double));
-  double obj_0, obj_1, obj_2;
+  double obj_0, obj_1, obj_2, final_obj;
   double f_p, f_pp;
   double step_size;
   
@@ -145,11 +145,13 @@ double take_gradient_step(double *w, double *grad, double eta, double **features
   obj_1 = compute_objective(new_w, features, grades, num_samples, num_features);
   
   if (obj_1 > obj_0) {
+    printf("WARNING: gradient direction didn't improve things\n");
     vec_add(new_w, grad, eta/2, num_features);
     obj_2 = compute_objective(new_w, features, grades, num_samples, num_features);
     if (obj_2 > obj_0) {
       printf("WARNING: gradient direction didn't improve things\n");
-      goto gradient_step_finished;
+      free(new_w);
+      return obj_0;
     }
     
     f_p = obj_1 - obj_0;
@@ -168,13 +170,22 @@ double take_gradient_step(double *w, double *grad, double eta, double **features
     else step_size = 2;
   }
   
-  step_size = MIN(step_size, 5);
+  step_size = MIN(step_size, 20);
   vec_add(w, grad, -eta*step_size, num_features);
+  final_obj = compute_objective(w, features, grades, num_samples, num_features);
+  if (final_obj > obj_2) {
+    if (obj_1 > obj_0) {
+      vec_add(w, grad, eta*(step_size-0.5), num_features);      
+    } else {
+      vec_add(w, grad, eta*(step_size-2), num_features);            
+    }
+    final_obj = obj_2;
+  }
   
-gradient_step_finished:
   free(new_w);
   
-  return compute_objective(w, features, grades, num_samples, num_features);
+  
+  return final_obj;
 }
 
 
@@ -220,7 +231,7 @@ double gradient_descent(double *w, double **features, int *grades, int num_sampl
   double *grad = (double *)malloc(num_features * sizeof(double));
   int sample_ind, other_sample_ind;
   double slack_coeff = C / pow(num_samples, 2);
-  double step_size = 0.0000005;
+  double step_size = 0.0000003;
   
   vec_assign(grad, w, 1, num_features);
 
