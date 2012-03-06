@@ -4,6 +4,9 @@ from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 import math
 
+RUN_VAL = True
+RUN_KAGGLE = False
+
 def extract(ds, corpus):
     feat = FeatureHeuristics.FeatureHeuristics()
     feat.extractFeatures(ds)
@@ -77,44 +80,46 @@ def eval(mat, learner, ds):
 
     return kappa
 
-train_mean_kappa = MeanKappaScore()
-val_mean_kappa = MeanKappaScore()
+if RUN_VAL:
 
-for essay_set in range(1, 9):
-    total_domains = 1
-    if essay_set == 2:
-        total_domains = 2
+    train_mean_kappa = MeanKappaScore()
+    val_mean_kappa = MeanKappaScore()
 
-    for domain in range(1, total_domains+1):
-        ds_train = DataSet.DataSet()
-        ds_train.importData('data/c_train.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
-        ds_train.setTrainSet(True)
-        ds_train.setID('c_rand')
+    for essay_set in range(1, 9):
+        total_domains = 1
+        if essay_set == 2:
+            total_domains = 2
 
-        ds_val = DataSet.DataSet()
-        ds_val.importData('data/c_val.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
-        ds_val.setTrainSet(False)
-        ds_val.setID('c_rand')
+        for domain in range(1, total_domains+1):
+            ds_train = DataSet.DataSet()
+            ds_train.importData('data/c_train.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
+            ds_train.setTrainSet(True)
+            ds_train.setID('c_rand')
 
-        corpus = Corpus.Corpus()
-        corpus.setCorpus('ds', ds_train, ds_val)
-        corpus.genLSA(ds_train, ds_val)
-        corpus.genPOS_LSA(ds_train, ds_val)
+            ds_val = DataSet.DataSet()
+            ds_val.importData('data/c_val.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
+            ds_val.setTrainSet(False)
+            ds_val.setID('c_rand')
 
-        if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
-            mat_train = extract(ds_train, corpus)
-            mat_val = extract(ds_val, corpus)
+            corpus = Corpus.Corpus()
+            corpus.setCorpus('ds', ds_train, ds_val)
+            corpus.genLSA(ds_train, ds_val)
+            corpus.genPOS_LSA(ds_train, ds_val)
 
-            model = learn(ds_train, mat_train)
+            if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
+                mat_train = extract(ds_train, corpus)
+                mat_val = extract(ds_val, corpus)
 
-            print "Train / Test (Essay Set #%d, Domain #%d)" % (essay_set, domain)
-            train_mean_kappa.add(eval(mat_train, model, ds_train))
-            val_mean_kappa.add(eval(mat_val, model, ds_val))
-            print "--\n"
+                model = learn(ds_train, mat_train)
 
-print "Overall Train / Test"
-print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
-print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
+                print "Train / Test (Essay Set #%d, Domain #%d)" % (essay_set, domain)
+                train_mean_kappa.add(eval(mat_train, model, ds_train))
+                val_mean_kappa.add(eval(mat_val, model, ds_val))
+                print "--\n"
+
+    print "Overall Train / Test"
+    print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
+    print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
 
 def run_test(essay_set, domain_id, fd):
     ds_train = DataSet.DataSet()
@@ -129,6 +134,7 @@ def run_test(essay_set, domain_id, fd):
 
     corpus = Corpus.Corpus()
     corpus.setCorpus('ds', ds_train, ds_test)
+    corpus.genLSA(ds_train, ds_test)
     corpus.genPOS_LSA(ds_train, ds_test)
 
     if (ds_train.size() > 0 and ds_test.size() > 0):
@@ -145,8 +151,6 @@ def run_test(essay_set, domain_id, fd):
         ds_test.outputKaggle(predicted_grades, fd)
 
 # Hi - please don't uncomment the function above. If you don't want to run this, just set the following flag to false.
-
-RUN_KAGGLE = False
 
 if RUN_KAGGLE:
     fd = open('data/kaggle_out.tsv', 'w')

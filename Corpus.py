@@ -80,10 +80,10 @@ class Corpus:
 
     def genLSA(self, ds1, ds2):
         documents = list()
-        for line in ds1.getRawText():
-            documents.append(LanguageUtils.tokenize(line))
-        for line in ds2.getRawText():
-            documents.append(LanguageUtils.tokenize(line))
+        for bow in ds1.getAllBoW():
+            documents.append(bow)
+        for bow in ds2.getAllBoW():
+            documents.append(bow)
 
         # Remove stop words
         i = 0
