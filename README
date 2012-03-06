@@ -12,3 +12,12 @@ $ sudo python setup.py install
 
 To convert data to UTF-8:
 iconv -f WINDOWS-1252 -t "UTF-8//IGNORE" training_set_rel3.tsv > training_set_rel3.utf8ignore.tsv
+
+***************************************************************
+
+To get Hunspell spellchecker to work:
+
+1. Go to http://hunspell.sourceforge.net/
+2. Download the source (top of page, or Source)
+3. configure / make / make install
+
