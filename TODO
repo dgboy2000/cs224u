@@ -54,3 +54,9 @@ def rte_features(rtepair):
     return features
 
 found at http://nltk.googlecode.com/svn/trunk/doc/book/ch06.html
+
+----
+
+Overall:
+ - try lots of classifiers, then take a max vote between them. (or weighted max vote)
+ - find the parameters that work best for each essay set, domain id pair.
