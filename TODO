@@ -19,6 +19,7 @@ DATA EXPLORATION TODOs:
 - output ranked in order of how badly we predict
 - look at distribution of scores/grades
 - Look at x/y plot of projected 1-dimensional feature vs grades for each grader
+- FEATURE IDEA: What is the document similarity between the answer and the prompt???
 
 Learning ideas:
 
@@ -37,3 +38,19 @@ anneal eta down to 0 as we converge
 
 do feature selection by essay set
 
+---
+
+Features we get for free with nltk.
+
+"RTE" (textual entailment)
+
+def rte_features(rtepair):
+    extractor = nltk.RTEFeatureExtractor(rtepair)
+    features = {}
+    features['word_overlap'] = len(extractor.overlap('word'))
+    features['word_hyp_extra'] = len(extractor.hyp_extra('word'))
+    features['ne_overlap'] = len(extractor.overlap('ne'))
+    features['ne_hyp_extra'] = len(extractor.hyp_extra('ne'))
+    return features
+
+found at http://nltk.googlecode.com/svn/trunk/doc/book/ch06.html
