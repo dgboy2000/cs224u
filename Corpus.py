@@ -76,7 +76,7 @@ class Corpus:
         ds1.setGensimPOSCorpus(mm_corpus[0:ds1.size()])
         ds2.setGensimPOSCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
 
-        self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS)
+        self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS, power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
 
     def genLSA(self, ds1, ds2):
         documents = list()
@@ -122,7 +122,8 @@ class Corpus:
         ds1.setGensimCorpus(mm_corpus[0:ds1.size()])
         ds2.setGensimCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
 
-        self.lsi = gensim.models.LsiModel(self.tfidf[mm_corpus], id2word=dictionary, num_topics=params.LSI_TOPICS)
+        self.lsi = gensim.models.LsiModel(self.tfidf[mm_corpus], id2word=dictionary, num_topics=params.LSI_TOPICS,
+                                          power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
         # For some reason can't use this interchangeably:
         #   self.lsi = gensim.models.LdaModel(corpus=tfidf, num_topics=params.LSI_TOPICS)
 
