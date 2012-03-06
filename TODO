@@ -60,3 +60,4 @@ found at http://nltk.googlecode.com/svn/trunk/doc/book/ch06.html
 Overall:
  - try lots of classifiers, then take a max vote between them. (or weighted max vote)
  - find the parameters that work best for each essay set, domain id pair.
+ - with OTHER_DISTS, can we do anything with the traits?

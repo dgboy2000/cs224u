@@ -17,10 +17,23 @@ import nltk
 import cPickle as pickle
 from nltk.collocations import *
 
+# OTHER_DISTS lists the other grade distributions that each essay set uses, *other* than the resolved grade.
+OTHER_DISTS = {
+    (1, 1): ['rater1_domain1', 'rater2_domain1'],
+    (2, 1): ['rater1_domain1', 'rater2_domain1', 'domain2_score', 'rater1_domain2', 'rater2_domain2'],
+    (2, 2): ['rater1_domain1', 'rater2_domain1', 'domain1_score', 'rater1_domain2', 'rater2_domain2'],
+    (3, 1): ['rater1_domain1', 'rater2_domain1'],
+    (4, 1): ['rater1_domain1', 'rater2_domain1'],
+    (5, 1): ['rater1_domain1', 'rater2_domain1'],
+    (6, 1): ['rater1_domain1', 'rater2_domain1'],
+    (7, 1): ['rater1_domain1', 'rater2_domain1'],
+    (8, 1): ['rater1_domain1', 'rater2_domain1', 'rater3_domain1'],
+    }
+
 class DataSet:
     def __init__(self):
         self.colNames = list()
-        self.rows = list() # dataset is a matrix - one level deep of nested lists
+        self.ds_size = -1
         self.textOnly = list() # just a list of the text
         self.trainSetFlag = False
         self.domain_id = 1
@@ -34,6 +47,7 @@ class DataSet:
         self.bigram_pos_tags = list()
         self.trigram_pos_tags = list()
         self.gensim_corpus = ()
+        self.other_dists_grades = list()
 
     def getID(self):
         return self.file_id
@@ -46,6 +60,10 @@ class DataSet:
 
     def importData(self, filename, essay_set=-1, domain_id=1):
         """If essay_set=-1, then we use all essays."""
+
+        if domain_id != 1 and domain_id != 2:
+            raise Exception("Unknown Domain.")
+
         reader = csv.reader(open(filename, 'rb'), delimiter='\t', quotechar=None)
         first = True
         self.file_name = os.path.basename(filename)
@@ -53,45 +71,59 @@ class DataSet:
         self.domain_id = domain_id
         self.essay_set = essay_set
 
-        grade_col = -1
-        text_col = -1
-        essay_set_col = -1
-        pred_id_col = -1
-        essay_id_col = -1
-
+        rowmap = dict() # key = row num, value = col_id
+        datamap = dict() # key = col_id, value = data
         for row in reader:
             if first:
-                self.colNames = row
                 i = 0
                 for col in row:
-                    if col == 'essay_set':
-                        essay_set_col = i
-                    elif col == 'essay':
-                        text_col = i
-                    elif col == 'essay_id':
-                        essay_id_col = i
-                    elif domain_id == 1 and col == 'domain1_score':
-                        grade_col = i
-                    elif domain_id == 2 and col == 'domain2_score':
-                        grade_col = i
-                    elif domain_id == 1 and col == 'domain1_predictionid':
-                        pred_id_col = i
-                    elif domain_id == 2 and col == 'domain2_predictionid':
-                        pred_id_col = i
+                    rowmap[i] = col
+                    datamap[col] = list()
                     i += 1
+
                 first = False
             else:
-                if essay_set < 0 or int(row[essay_set_col]) == essay_set:
-                    self.rows.append(row)
-                    self.textOnly.append(row[text_col].strip('"'))
-                    self.essay_ids.append(int(row[essay_id_col]))
+                i = 0
+                for col in row:
+                    if rowmap[i] == 'essay':
+                        datamap[rowmap[i]].append(col.strip('"'))
+                    else:
+                        if col:
+                            datamap[rowmap[i]].append(int(col))
+                        else:
+                            datamap[rowmap[i]].append('**GARBAGE**')
+                    i += 1
 
-                    if grade_col > -1:
-                        self.grades.append(int(row[grade_col]))
-                    if pred_id_col > -1:
-                        self.prediction_ids.append(int(row[pred_id_col]))
+        # get indices that match essay_set
+        inds = [i for i in range(len(datamap['essay_set'])) 
+                if datamap['essay_set'][i] == self.getEssaySet() or self.getEssaySet() == -1]
+        self.ds_size = len(inds)
+
+        # get master grades
+        domain_col_name = 'domain%d_score' % self.getDomain()
+        self.grades = [datamap[domain_col_name][i] for i in inds]
+
+        # get textOnly
+        self.textOnly = [datamap['essay'][i] for i in inds]
+
+        # get essay_ids
+        self.essay_ids = [datamap['essay_id'][i] for i in inds]
+
+        # get prediction_ids
+        pred_col_name = 'domain%d_predictionid' % self.getDomain()
+        if pred_col_name in datamap:
+            self.prediction_ids = [datamap[pred_col_name][i] for i in inds]
+
+        # get other_dists
+        other_dists_cols = OTHER_DISTS[(self.getEssaySet(), self.getDomain())]
+        self.other_dists_grades = list()
+        for dist_col_name in other_dists_cols:
+            self.other_dists_grades.append([datamap[dist_col_name][i] for i in inds])
 
         return
+
+    def getOtherDistsGrades(self):
+        return self.other_dists_grades
 
     def getAllBoW(self):
         """Return unigram, bigram words as bag of words."""
@@ -220,13 +252,10 @@ class DataSet:
         return self.trainSetFlag
 
     def size(self):
-        return len(self.rows)
+        return self.ds_size
 
     def dumpColNames(self):
         print '\n'.join(self.colNames)
-
-    def dumpRow(self, lineNum):
-        print '\n'.join(self.rows[lineNum])
 
     def setGensimCorpus(self, mm):
         self.gensim_corpus = mm
