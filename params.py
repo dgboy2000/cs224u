@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
 #(deprecated)TOTAL_WORD_UNIGRAMS = 75
