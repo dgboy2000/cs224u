@@ -1,5 +1,5 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt
 from learn import LinearRegression, SVM
 from score import KappaScore, MeanKappaScore
 import math
@@ -45,12 +45,18 @@ class Run:
         pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
         pos_lsi_feat.extractFeatures(ds, self.corpus)
 
+        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
+        #    prompt_feat = FeaturePrompt.FeaturePrompt()
+        #    prompt_feat.extractFeatures(ds, self.corpus)
+
         all_feats = list()
         all_feats.append(feat)
         all_feats.append(spelling_feat)
         all_feats.append(transitions_feat)
         all_feats.append(lsi_feat)
         all_feats.append(pos_lsi_feat)
+        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
+        #    all_feats.append(prompt_feat)
 
         return Utils.combine_features(ds, all_feats)
 

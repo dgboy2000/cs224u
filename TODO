@@ -1,3 +1,6 @@
+Soon:
+ - put unigrams back in - but instead do feature selection through the top 5 words in top X topics.
+
 Better coding:
     - Refactor 'kaggle.py' to be more general
     - Use constants throughout all code for the data files (stop using the strings)

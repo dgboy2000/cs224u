@@ -24,6 +24,11 @@ class Corpus:
         self.pos_lsi = None
         self.ds1 = None
         self.ds2 = None
+        self.word_dicionary = None
+
+    def getWordDictionary(self):
+        """As degined for LSI (see genLSI for details)."""
+        return self.word_dictionary
 
     def getWords(self):
         return self.corpus
@@ -116,6 +121,7 @@ class Corpus:
 
         # create overall corpus
         dictionary = gensim.corpora.Dictionary(texts)
+        self.word_dictionary = dictionary
         #dictionary.save(TODO)
 
         mm_corpus = [dictionary.doc2bow(text) for text in texts]
