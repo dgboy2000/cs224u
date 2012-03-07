@@ -35,13 +35,13 @@ class Run:
     def _extract_ds(self, ds):
         feat = FeatureHeuristics.FeatureHeuristics()
         feat.extractFeatures(ds)
-        
+
         spelling_feat = FeatureSpelling.FeatureSpelling()
         spelling_feat.extractFeatures(ds)
 
         transitions_feat = FeatureTransitions.FeatureTransitions()
         transitions_feat.extractFeatures(ds)
-        
+
         lsi_feat = FeatureLSI.FeatureLSI()
         lsi_feat.extractFeatures(ds, self.corpus)
         
@@ -87,12 +87,17 @@ class Run:
             f = open(fname, 'w')
             pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
 
-        #all_mat = np.concatenate((self.train_feat_mat, self.test_feat_mat), axis=0)
-        #all_mat = np.asarray(all_mat, dtype=np.float64) # convert all to float
-        #for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
-        #    self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
-        #for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
-        #    self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+        """# Normalize to unit mean/var
+        self.train_feat_mat = np.asarray(self.train_feat_mat, dtype=np.float) # convert all to float
+        self.test_feat_mat = np.asarray(self.test_feat_mat, dtype=np.float)
+        all_mat = np.concatenate((self.train_feat_mat, self.test_feat_mat), axis=0)
+        for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
+            if sum(all_mat[:,i] > 0.0):
+                self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+        for i in range(self.test_feat_mat.shape[1]): # norm to unit mean/var.
+            if sum(all_mat[:,i] > 0.0):
+                self.test_feat_mat[:,i] = (self.test_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+        """
 
         return
         

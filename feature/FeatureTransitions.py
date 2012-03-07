@@ -47,8 +47,8 @@ class FeatureTransitions(object):
                 if word in FeatureTransitions.transitions:
                     transitions_count += 1
             
-            curfeat.append(unique_transitions_count)
-            curfeat.append(unique_transitions_count/len(words))
+            curfeat.append(float(unique_transitions_count))
+            curfeat.append(float(unique_transitions_count)/float(len(words)))
             
             lenfeats.append(curfeat)
 
