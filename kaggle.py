@@ -3,8 +3,23 @@
 from score import KappaScore, MeanKappaScore
 import Run
 
+RUN_FEATURE = True
 RUN_VAL = True
 RUN_KAGGLE = False
+
+if RUN_FEATURE:
+    for essay_set in range(1, 9):
+        total_domains = 1
+        if essay_set == 2:
+            total_domains = 2
+
+        for domain in range(1, total_domains+1):
+            run = Run.Run()
+            run.setup('data/c_train.utf8ignore.tsv', 'data/c_val.utf8ignore.tsv', essay_set, domain)
+            print "Extracting features for essay %d domain %d ... " %(essay_set, domain),
+            run.extract()
+            run.cache_features('features.essay%d.domain%d.pickle' %(essay_set, domain))
+            print "Done"
 
 if RUN_VAL:
     train_mean_kappa = MeanKappaScore()
@@ -18,7 +33,10 @@ if RUN_VAL:
         for domain in range(1, total_domains+1):
             run = Run.Run()
             run.setup('data/c_train.utf8ignore.tsv', 'data/c_val.utf8ignore.tsv', essay_set, domain)
-            run.extract()
+            if RUN_FEATURE:
+                run.load_features('features.essay%d.domain%d.pickle' %(essay_set, domain))
+            else:
+                run.extract()
             run.learn()
             run.predict()
             train_score, test_score = run.eval()

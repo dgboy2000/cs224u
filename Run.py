@@ -1,8 +1,10 @@
 import DataSet, Corpus
 from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI
 from learn import LinearRegression, SVM
-from score import KappaScore, MeanKappaScore
 import math
+import os
+import pickle
+from score import KappaScore, MeanKappaScore
 
 class Run:
     def __init__(self):
@@ -28,7 +30,26 @@ class Run:
         self.corpus.setCorpus(self.ds_train, self.ds_test)
 
         return
-
+        
+    def cache_features(self, filename):
+        f = open(os.path.join('cache', filename), 'wb')
+        pickle.dump({
+            'train_features': self.train_feat_mat,
+            'train_grades': self.ds_train.getGrades(),
+            'test_features': self.test_feat_mat,
+            'test_grades': self.ds_test.getGrades()
+        }, f)
+        f.close()
+        
+    def load_features(self, filename):
+        f = open(os.path.join('cache', filename), 'rb')
+        feat_cache = pickle.load(f)
+        f.close()
+        self.train_feat_mat = feat_cache['train_features']
+        self.ds_train.setGrades(feat_cache['train_grades'])
+        self.test_feat_mat = feat_cache['test_features']
+        self.ds_test.setGrades(feat_cache['test_grades'])
+        
     def _extract_ds(self, ds):
         feat = FeatureHeuristics.FeatureHeuristics()
         feat.extractFeatures(ds)
@@ -38,10 +59,10 @@ class Run:
 
         transitions_feat = FeatureTransitions.FeatureTransitions()
         transitions_feat.extractFeatures(ds)
-
+        
         lsi_feat = FeatureLSI.FeatureLSI()
         lsi_feat.extractFeatures(ds, self.corpus)
-
+        
         pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
         pos_lsi_feat.extractFeatures(ds, self.corpus)
 

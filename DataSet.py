@@ -286,3 +286,25 @@ class DataSet:
     def getGrades(self):
         # TODO throw exception if grades is empty
         return np.asarray(self.grades)
+        
+    def setGrades(self, grades):
+        self.grades = grades
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
