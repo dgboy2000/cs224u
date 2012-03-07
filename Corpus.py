@@ -22,6 +22,8 @@ class Corpus:
         self.tfidf = None
         self.pos_tfidf = None
         self.pos_lsi = None
+        self.ds1 = None
+        self.ds2 = None
 
     def getWords(self):
         return self.corpus
@@ -29,15 +31,10 @@ class Corpus:
     def getPOS(self):
         return self.pos_corpus
 
-    def setCorpus(self, type, ds=None, ds2=None):
-        if type == 'english-web':
-            self.corpus = nltk.corpus.genesis.words('english-web.txt')
-        elif type == 'ds':
-            self.getFromDataSet(ds, ds2)
-        else:
-            raise Exception('Corpus does not exist.')
+    def setCorpus(self, ds, ds2):
+        self.ds1 = ds
+        self.ds2 = ds2
 
-    def getFromDataSet(self, ds, ds2=None):
         c = list()
         for line in ds.getRawText():
             c += LanguageUtils.tokenize(line)
@@ -60,7 +57,10 @@ class Corpus:
 
         self.pos_corpus = pos_corpus
 
-    def genPOS_LSA(self, ds1, ds2):
+    def genPOS_LSA(self):
+        ds1 = self.ds1
+        ds2 = self.ds2
+
         documents = list()
         for tags in ds1.getAllPOS():
             documents.append(tags)
@@ -78,7 +78,10 @@ class Corpus:
 
         self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS, power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
 
-    def genLSA(self, ds1, ds2):
+    def genLSA(self):
+        ds1 = self.ds1
+        ds2 = self.ds2
+
         documents = list()
         for bow in ds1.getAllBoW():
             documents.append(bow)

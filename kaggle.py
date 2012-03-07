@@ -1,87 +1,12 @@
-import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI
-from learn import LinearRegression, SVM
+# Main running script
+
 from score import KappaScore, MeanKappaScore
-import math
+import Run
 
 RUN_VAL = True
 RUN_KAGGLE = False
 
-def extract(ds, corpus):
-    feat = FeatureHeuristics.FeatureHeuristics()
-    feat.extractFeatures(ds)
-    
-    spelling_feat = FeatureSpelling.FeatureSpelling()
-    spelling_feat.extractFeatures(ds)
-
-    transitions_feat = FeatureTransitions.FeatureTransitions()
-    transitions_feat.extractFeatures(ds)
-
-    #bigram_feat = FeatureBigram.FeatureBigram()
-    #bigram_feat.extractFeatures(ds, corpus)
-
-    #bigram_pos_feat = FeaturePOSBigram.FeaturePOSBigram()
-    #bigram_pos_feat.extractFeatures(ds, corpus)
-
-    #unigram_feat = FeatureUnigram.FeatureUnigram()
-    #unigram_feat.extractFeatures(ds, corpus)
-
-    #unigram_pos_feat = FeaturePOSUnigram.FeaturePOSUnigram()
-    #unigram_pos_feat.extractFeatures(ds, corpus)
-
-    lsi_feat = FeatureLSI.FeatureLSI()
-    lsi_feat.extractFeatures(ds, corpus)
-
-    pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
-    pos_lsi_feat.extractFeatures(ds, corpus)
-
-    all_feats = list()
-    all_feats.append(feat)
-    all_feats.append(spelling_feat)
-    all_feats.append(transitions_feat)
-    all_feats.append(lsi_feat)
-    all_feats.append(pos_lsi_feat)
-    #all_feats.append(bigram_feat)
-    #all_feats.append(bigram_pos_feat)
-    #all_feats.append(unigram_feat)
-    #all_feats.append(unigram_pos_feat)
-
-    mat = Utils.combine_features(ds, all_feats)
-    return mat
-    
-def learn(ds, mat):
-    grades = ds.getGrades()
-
-    learner = LinearRegression(intercept = True)
-    #learner = SVM()
-    learner.train(mat, grades)
-    
-    return learner
-
-def eval(mat, learner, ds):
-    grades = ds.getGrades()
-    round = False
-    if ds.getEssaySet() == 8:
-        round = True
-    predicted_grades = learner.grade(mat, {'round': round})
-
-    kappa = KappaScore(grades, predicted_grades)
-    print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
-
-    if not ds.isTrainSet():
-        i = 0
-        lines = ds.getRawText()
-        f = open('output/val.set%d.domain%d.tsv' % (ds.getEssaySet(), ds.getDomain()), 'w')
-        for grade in grades:
-            pgrade = predicted_grades[i]
-            line = lines[i]
-            f.write('%d\t%d\t%d\t%s\n' % (math.fabs(pgrade-grade), grade, pgrade, line))
-            i+=1
-
-    return kappa
-
 if RUN_VAL:
-
     train_mean_kappa = MeanKappaScore()
     val_mean_kappa = MeanKappaScore()
 
@@ -91,71 +16,35 @@ if RUN_VAL:
             total_domains = 2
 
         for domain in range(1, total_domains+1):
-            ds_train = DataSet.DataSet()
-            ds_train.importData('data/c_train.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
-            ds_train.setTrainSet(True)
-            ds_train.setID('c_rand')
+            run = Run.Run()
+            run.setup('data/c_train.utf8ignore.tsv', 'data/c_val.utf8ignore.tsv', essay_set, domain)
+            run.extract()
+            run.learn()
+            run.predict()
+            train_score, test_score = run.eval()
 
-            ds_val = DataSet.DataSet()
-            ds_val.importData('data/c_val.utf8ignore.tsv', essay_set=essay_set, domain_id=domain)
-            ds_val.setTrainSet(False)
-            ds_val.setID('c_rand')
-
-            corpus = Corpus.Corpus()
-            corpus.setCorpus('ds', ds_train, ds_val)
-            corpus.genLSA(ds_train, ds_val)
-            corpus.genPOS_LSA(ds_train, ds_val)
-
-            if (len(ds_train.getRawText()) > 0 and len(ds_val.getRawText())> 0):
-                mat_train = extract(ds_train, corpus)
-                mat_val = extract(ds_val, corpus)
-
-                model = learn(ds_train, mat_train)
-
-                print "Train / Test (Essay Set #%d, Domain #%d)" % (essay_set, domain)
-                train_mean_kappa.add(eval(mat_train, model, ds_train))
-                val_mean_kappa.add(eval(mat_val, model, ds_val))
-                print "--\n"
+            train_mean_kappa.add(train_score)
+            val_mean_kappa.add(test_score)
+            print "--\n"
 
     print "Overall Train / Test"
     print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
     print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
 
-def run_test(essay_set, domain_id, fd):
-    ds_train = DataSet.DataSet()
-    ds_train.importData('data/training_set_rel3.utf8ignore.tsv', essay_set, domain_id)
-    ds_train.setTrainSet(True)
-    ds_train.setID('full_kaggle')
-
-    ds_test = DataSet.DataSet()
-    ds_test.importData('data/valid_set.utf8ignore.tsv', essay_set, domain_id)
-    ds_test.setTrainSet(False)
-    ds_test.setID('full_kaggle')
-
-    corpus = Corpus.Corpus()
-    corpus.setCorpus('ds', ds_train, ds_test)
-    corpus.genLSA(ds_train, ds_test)
-    corpus.genPOS_LSA(ds_train, ds_test)
-
-    if (ds_train.size() > 0 and ds_test.size() > 0):
-        mat_train = extract(ds_train, corpus)
-        mat_test = extract(ds_test, corpus)
-
-        model = learn(ds_train, mat_train)
-
-        round = False
-        if ds_train.getEssaySet() == 8:
-            round = True
-        predicted_grades = model.grade(mat_test, {'round': round})
-
-        ds_test.outputKaggle(predicted_grades, fd)
-
-# Hi - please don't uncomment the function above. If you don't want to run this, just set the following flag to false.
-
 if RUN_KAGGLE:
     fd = open('data/kaggle_out.tsv', 'w')
     fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
     for essay_set in range(1, 9):
-        run_test(essay_set, 1, fd)
-    run_test(2, 2, fd) # essay set 2 is the only one with domain 2 scores
+        total_domains = 1
+        if essay_set == 2:
+            total_domains = 2
+
+        for domain in range(1, total_domains+1):
+            run = Run.Run()
+            run.setup('data/training_set_rel3.utf8ignore.tsv', 'data/valid_set.utf8ignore.tsv', essay_set, domain)
+            run.extract()
+            run.learn()
+            run.predict()
+
+        run.outputKaggle(fd)
 

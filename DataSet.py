@@ -41,19 +41,12 @@ class DataSet:
         self.prediction_ids = list()
         self.essay_ids = list()
         self.essay_set = None
-        self.file_id = 'default'
         self.file_name = ''
         self.pos_tags = list()
         self.bigram_pos_tags = list()
         self.trigram_pos_tags = list()
         self.gensim_corpus = ()
         self.other_dists_grades = list()
-
-    def getID(self):
-        return self.file_id
-
-    def setID(self, file_id):
-        self.file_id = file_id
 
     def getFilename(self):
         return self.file_name
