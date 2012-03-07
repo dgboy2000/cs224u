@@ -3,8 +3,9 @@ from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Util
 from learn import LinearRegression, SVM
 import math
 import os
-import pickle
+import cPickle as pickle
 from score import KappaScore, MeanKappaScore
+import numpy as np
 
 class Run:
     def __init__(self):
@@ -30,25 +31,6 @@ class Run:
         self.corpus.setCorpus(self.ds_train, self.ds_test)
 
         return
-        
-    def cache_features(self, filename):
-        f = open(os.path.join('cache', filename), 'wb')
-        pickle.dump({
-            'train_features': self.train_feat_mat,
-            'train_grades': self.ds_train.getGrades(),
-            'test_features': self.test_feat_mat,
-            'test_grades': self.ds_test.getGrades()
-        }, f)
-        f.close()
-        
-    def load_features(self, filename):
-        f = open(os.path.join('cache', filename), 'rb')
-        feat_cache = pickle.load(f)
-        f.close()
-        self.train_feat_mat = feat_cache['train_features']
-        self.ds_train.setGrades(feat_cache['train_grades'])
-        self.test_feat_mat = feat_cache['test_features']
-        self.ds_test.setGrades(feat_cache['test_grades'])
         
     def _extract_ds(self, ds):
         feat = FeatureHeuristics.FeatureHeuristics()
@@ -79,14 +61,39 @@ class Run:
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #    all_feats.append(prompt_feat)
 
-        return Utils.combine_features(ds, all_feats)
+        feat_mat = Utils.combine_features(ds, all_feats)
+
+        return feat_mat
 
     def extract(self):
-        self.corpus.genLSA()
-        self.corpus.genPOS_LSA()
+        fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (
+                 self.ds_train.getFilename(),
+                 self.ds_test.getFilename(),
+                 self.ds_train.getEssaySet(),
+                 self.ds_train.getDomain())
 
-        self.train_feat_mat = self._extract_ds(self.ds_train)
-        self.test_feat_mat = self._extract_ds(self.ds_test)
+        try:
+            f = open(fname, 'rb')
+            print "Using pickled features for essay set %d, domain %d." % (
+                   self.ds_train.getEssaySet(), self.ds_train.getDomain())
+            self.train_feat_mat, self.test_feat_mat = pickle.load(f)
+        except:
+            self.corpus.genLSA()
+            self.corpus.genPOS_LSA()
+
+            self.train_feat_mat = self._extract_ds(self.ds_train)
+            self.test_feat_mat = self._extract_ds(self.ds_test)
+
+            f = open(fname, 'w')
+            pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
+
+        #all_mat = np.concatenate((self.train_feat_mat, self.test_feat_mat), axis=0)
+        #all_mat = np.asarray(all_mat, dtype=np.float64) # convert all to float
+        #for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
+        #    self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+        #for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
+        #    self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+
         return
         
     def learn(self):
