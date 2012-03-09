@@ -6,6 +6,7 @@ import os
 import cPickle as pickle
 from score import KappaScore, MeanKappaScore
 import numpy as np
+import params
 
 class Run:
     def __init__(self):
@@ -36,17 +37,22 @@ class Run:
         return
 
     def _extract_feat(self, ds, feat):
+        feat_type = type(feat).__name__
         # do caching and stuff
         fname = 'cache/feature_mat.%s.%s.set%d.dom%d.pickle' % (
-                 type(feat).__name__,
+                 feat_type,
                  ds.getFilename(),
                  ds.getEssaySet(),
                  ds.getDomain())
 
         try:
+            if (feat_type not in params.FEATURE_CACHE) or not params.FEATURE_CACHE[feat_type]:
+                raise Exception('Do not use cache.')
             f = open(fname, 'rb')
             feat_mat = pickle.load(f)
         except:
+            if params.DEBUG:
+                print "Calculating ", feat_type
             feat.extractFeatures(ds, self.corpus)
             feat_mat = feat.getFeatureMatrix()
             pickle.dump(feat_mat, open(fname, 'w'))
@@ -66,26 +72,26 @@ class Run:
         return Utils.combine_features(ds, all_feats)
 
     def extract(self):
-        fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (
-                 self.ds_train.getFilename(),
-                 self.ds_test.getFilename(),
-                 self.ds_train.getEssaySet(),
-                 self.ds_train.getDomain())
+        #fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (
+        #         self.ds_train.getFilename(),
+        #         self.ds_test.getFilename(),
+        #         self.ds_train.getEssaySet(),
+        #         self.ds_train.getDomain())
 
-        try:
-            f = open(fname, 'rb')
-            print "Using pickled features for essay set %d, domain %d." % (
-                   self.ds_train.getEssaySet(), self.ds_train.getDomain())
-            self.train_feat_mat, self.test_feat_mat = pickle.load(f)
-        except:
-            self.corpus.genLSA()
-            #self.corpus.genPOS_LSA()
+        #try:
+        #    f = open(fname, 'rb')
+        #    print "Using pickled features for essay set %d, domain %d." % (
+        #           self.ds_train.getEssaySet(), self.ds_train.getDomain())
+        #    self.train_feat_mat, self.test_feat_mat = pickle.load(f)
+        #except:
+        self.corpus.genLSA()
+        #self.corpus.genPOS_LSA()
 
-            self.train_feat_mat = self._extract_ds(self.ds_train)
-            self.test_feat_mat = self._extract_ds(self.ds_test)
+        self.train_feat_mat = self._extract_ds(self.ds_train)
+        self.test_feat_mat = self._extract_ds(self.ds_test)
 
-            f = open(fname, 'w')
-            pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
+        #    f = open(fname, 'w')
+        #    pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
 
         """
         ## XXX: SPECIAL KIND OF FEATURE. It is dependent on the learner, so we will recalc these features

@@ -11,3 +11,13 @@ POS_LSI_TOPICS = 10 # 10
 # For faster testing, set these to power_iters=2, extra_samples=100
 LSI_POWER_ITERS = 10
 LSI_EXTRA_SAMPLES = 500
+
+FEATURE_CACHE = {
+    'FeatureHeuristics': True,
+    'FeatureSpelling': True,
+    'FeatureTransitions': True,
+    'FeatureLSI': True, # If set to False, I highly suggest setting genLSA to False.
+    'FeaturePrompt': True,
+    'FeaturePOS_LSI': True,
+    'genLSA': True,
+    }

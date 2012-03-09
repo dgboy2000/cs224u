@@ -99,6 +99,8 @@ class Corpus:
             ds1.getEssaySet())
 
         try:
+            if not params.FEATURE_CACHE['genLSA']:
+                raise Exception('Do not cache genLSA.')
             f = open(cache_fname, 'rb')
             self.lsi, self.tfidf, mm_corpus, self.word_dictionary = pickle.load(f)
         

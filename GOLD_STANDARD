@@ -1,57 +1,48 @@
-Using pickled features for essay set 1, domain 1.
 Train/Test Scores: (ESSAY_SET #1, DOMAIN 1)
-Kappa Score 0.871563
-Kappa Score 0.826247
+Kappa Score 0.870655
+Kappa Score 0.828399
 --
 
-Using pickled features for essay set 2, domain 1.
 Train/Test Scores: (ESSAY_SET #2, DOMAIN 1)
-Kappa Score 0.757994
-Kappa Score 0.693455
+Kappa Score 0.759735
+Kappa Score 0.690207
 --
 
-Using pickled features for essay set 2, domain 2.
 Train/Test Scores: (ESSAY_SET #2, DOMAIN 2)
-Kappa Score 0.728155
-Kappa Score 0.688428
+Kappa Score 0.726141
+Kappa Score 0.696277
 --
 
-Using pickled features for essay set 3, domain 1.
 Train/Test Scores: (ESSAY_SET #3, DOMAIN 1)
-Kappa Score 0.712761
-Kappa Score 0.704604
+Kappa Score 0.719290
+Kappa Score 0.705157
 --
 
-Using pickled features for essay set 4, domain 1.
 Train/Test Scores: (ESSAY_SET #4, DOMAIN 1)
-Kappa Score 0.823687
-Kappa Score 0.772662
+Kappa Score 0.828452
+Kappa Score 0.774859
 --
 
-Using pickled features for essay set 5, domain 1.
 Train/Test Scores: (ESSAY_SET #5, DOMAIN 1)
 Kappa Score 0.847034
-Kappa Score 0.818604
+Kappa Score 0.819738
 --
 
-Using pickled features for essay set 6, domain 1.
 Train/Test Scores: (ESSAY_SET #6, DOMAIN 1)
-Kappa Score 0.824398
-Kappa Score 0.813428
+Kappa Score 0.828243
+Kappa Score 0.810096
 --
 
-Using pickled features for essay set 7, domain 1.
 Train/Test Scores: (ESSAY_SET #7, DOMAIN 1)
-Kappa Score 0.801300
-Kappa Score 0.805046
+Kappa Score 0.800542
+Kappa Score 0.806421
 --
 
-Using pickled features for essay set 8, domain 1.
 Train/Test Scores: (ESSAY_SET #8, DOMAIN 1)
-Kappa Score 0.769778
-Kappa Score 0.697400
+Kappa Score 0.769051
+Kappa Score 0.688475
 --
 
 Overall Train / Test
-Kappa Score 0.798685
-Kappa Score 0.763625
+Kappa Score 0.799997
+Kappa Score 0.763748
