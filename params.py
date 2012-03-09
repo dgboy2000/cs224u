@@ -20,4 +20,5 @@ FEATURE_CACHE = {
     'FeaturePrompt': True,
     'FeaturePOS_LSI': True,
     'genLSA': True,
+    'FeatureSim': True,
     }

@@ -1,5 +1,5 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
 from learn import LinearRegression, SVM
 import math
 import os
@@ -65,6 +65,7 @@ class Run:
         all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
         all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
         all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
+        all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
         #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
