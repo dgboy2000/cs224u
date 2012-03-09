@@ -34,39 +34,36 @@ class Run:
         self.dist = dist
 
         return
-        
-    def _extract_ds(self, ds):
-        feat = FeatureHeuristics.FeatureHeuristics()
-        feat.extractFeatures(ds)
 
-        spelling_feat = FeatureSpelling.FeatureSpelling()
-        spelling_feat.extractFeatures(ds)
+    def _extract_feat(self, ds, feat):
+        # do caching and stuff
+        fname = 'cache/feature_mat.%s.%s.set%d.dom%d.pickle' % (
+                 type(feat).__name__,
+                 ds.getFilename(),
+                 ds.getEssaySet(),
+                 ds.getDomain())
 
-        transitions_feat = FeatureTransitions.FeatureTransitions()
-        transitions_feat.extractFeatures(ds)
-
-        lsi_feat = FeatureLSI.FeatureLSI()
-        lsi_feat.extractFeatures(ds, self.corpus)
-
-        #pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
-        #pos_lsi_feat.extractFeatures(ds, self.corpus)
-
-        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
-        #    prompt_feat = FeaturePrompt.FeaturePrompt()
-        #    prompt_feat.extractFeatures(ds, self.corpus)
-
-        all_feats = list()
-        all_feats.append(feat)
-        all_feats.append(spelling_feat)
-        all_feats.append(transitions_feat)
-        all_feats.append(lsi_feat)
-        #all_feats.append(pos_lsi_feat)
-        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
-        #    all_feats.append(prompt_feat)
-
-        feat_mat = Utils.combine_features(ds, all_feats)
+        try:
+            f = open(fname, 'rb')
+            feat_mat = pickle.load(f)
+        except:
+            feat.extractFeatures(ds, self.corpus)
+            feat_mat = feat.getFeatureMatrix()
+            pickle.dump(feat_mat, open(fname, 'w'))
 
         return feat_mat
+        
+    def _extract_ds(self, ds):
+        all_feats = list()
+        all_feats.append(self._extract_feat(ds, FeatureHeuristics.FeatureHeuristics()))
+        all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
+        all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
+        all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
+        #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
+        #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
+
+        return Utils.combine_features(ds, all_feats)
 
     def extract(self):
         fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (

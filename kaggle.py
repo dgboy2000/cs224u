@@ -8,7 +8,7 @@ from score import KappaScore, MeanKappaScore
 
 RUN_VAL = True
 RUN_KAGGLE = False
-RECOMPUTE_FEATURES = False
+RECOMPUTE_FEATURES = True
 
 if RECOMPUTE_FEATURES:
     print "Removing old feature cache ... ",

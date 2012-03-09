@@ -63,6 +63,9 @@ class Corpus:
         self.pos_corpus = pos_corpus
 
     def genPOS_LSA(self):
+        print "DEPRECATED. TO USE AGAIN, MAKE SURE YOU DON'T USE THE POS TAGS IN genPOS()."
+        exit(0) # Fail HARD.
+
         ds1 = self.ds1
         ds2 = self.ds2
 
@@ -84,8 +87,28 @@ class Corpus:
         self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS, power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
 
     def genLSA(self):
+        # To cache...
+        # self.lsi, self.tfidf, mm_corpus, self.word_dictionary
+
         ds1 = self.ds1
         ds2 = self.ds2
+
+        cache_fname = 'cache/lsa.%s.%s.set%d.pickle' % (
+            ds1.getFilename(),
+            ds2.getFilename(),
+            ds1.getEssaySet())
+
+        try:
+            f = open(cache_fname, 'rb')
+            self.lsi, self.tfidf, mm_corpus, self.word_dictionary = pickle.load(f)
+        
+            # split into two corpii (haha) and ds?.setGensimCorpus(mm)
+            ds1.setGensimCorpus(mm_corpus[0:ds1.size()])
+            ds2.setGensimCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
+
+            return
+        except:
+            pass
 
         documents = list()
         bows = ds1.getAllBoW()
@@ -137,8 +160,11 @@ class Corpus:
 
         self.lsi = gensim.models.LsiModel(self.tfidf[mm_corpus], id2word=dictionary, num_topics=params.LSI_TOPICS,
                                           power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
-        # For some reason can't use this interchangeably:
-        #   self.lsi = gensim.models.LdaModel(corpus=tfidf, num_topics=params.LSI_TOPICS)
+
+        f = open(cache_fname, 'w')
+        pickle.dump((self.lsi, self.tfidf, mm_corpus, self.word_dictionary), f)
+
+        return
 
     def getLSA(self):
         return self.lsi
