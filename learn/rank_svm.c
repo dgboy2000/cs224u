@@ -132,7 +132,7 @@ double compute_objective(double *w, double **features, int *grades, int num_samp
 
 
 // Take a well-sized step in the specified gradient direction and return the final objective value
-double take_gradient_step(double *w, double *grad, double eta, double **features, int *grades, int num_samples, int num_features) {
+double take_gradient_step(double *w, double *grad, double *eta, double **features, int *grades, int num_samples, int num_features) {
   double *new_w = (double *)malloc(num_samples * sizeof(double));
   double obj_0, obj_1, obj_2, final_obj;
   double f_p, f_pp;
@@ -141,15 +141,16 @@ double take_gradient_step(double *w, double *grad, double eta, double **features
   vec_assign(new_w, w, 1, num_features);
   obj_0 = compute_objective(new_w, features, grades, num_samples, num_features);
   
-  vec_add(new_w, grad, -eta, num_features);
+  vec_add(new_w, grad, -*eta, num_features);
   obj_1 = compute_objective(new_w, features, grades, num_samples, num_features);
   
   if (obj_1 > obj_0) {
-    printf("WARNING: gradient direction didn't improve things\n");
-    vec_add(new_w, grad, eta/2, num_features);
+    printf("WARNING: gradient direction didn't improve things with step size %3.10f\n", *eta);
+    vec_add(new_w, grad, *eta/2, num_features);
     obj_2 = compute_objective(new_w, features, grades, num_samples, num_features);
     if (obj_2 > obj_0) {
-      printf("WARNING: gradient direction didn't improve things\n");
+      printf("WARNING: gradient direction really didn't improve things; shrinking step size\n");
+      *eta = *eta / 4;
       free(new_w);
       return obj_0;
     }
@@ -160,7 +161,7 @@ double take_gradient_step(double *w, double *grad, double eta, double **features
     if (f_pp != 0) step_size = 0.5 - f_p / f_pp;
     else step_size = 0.5;
   } else {
-    vec_add(new_w, grad, -eta, num_features);
+    vec_add(new_w, grad, -*eta, num_features);
     obj_2 = compute_objective(new_w, features, grades, num_samples, num_features);
     
     f_p = (obj_2 - obj_0) / 2;
@@ -171,13 +172,14 @@ double take_gradient_step(double *w, double *grad, double eta, double **features
   }
   
   step_size = MIN(step_size, 20);
-  vec_add(w, grad, -eta*step_size, num_features);
+  vec_add(w, grad, -*eta*step_size, num_features);
   final_obj = compute_objective(w, features, grades, num_samples, num_features);
   if (final_obj > obj_2) {
+    printf("WARNING: final objective wasn't as good as we thought it should be\n");
     if (obj_1 > obj_0) {
-      vec_add(w, grad, eta*(step_size-0.5), num_features);      
+      vec_add(w, grad, *eta*(step_size-0.5), num_features);      
     } else {
-      vec_add(w, grad, eta*(step_size-2), num_features);            
+      vec_add(w, grad, *eta*(step_size-2), num_features);            
     }
     final_obj = obj_2;
   }
@@ -225,13 +227,13 @@ double stochastic_gradient_descent(double *w, double **features, int *grades, in
   return compute_objective(w, features, grades, num_samples, num_features);
 }
 
-// Do an iteration of gradient descent and return the post-update objective function
-double gradient_descent(double *w, double **features, int *grades, int num_samples, int num_features) {
+// Do an iteration of gradient descent and return the post-update objective function.
+// Possibly update the optimal step size in place.
+double gradient_descent(double *w, double *step_size, double **features, int *grades, int num_samples, int num_features) {
   double *scores = (double *)malloc(num_samples * sizeof(double));
   double *grad = (double *)malloc(num_features * sizeof(double));
   int sample_ind, other_sample_ind;
   double slack_coeff = C / pow(num_samples, 2);
-  double step_size = 0.0000003;
   
   vec_assign(grad, w, 1, num_features);
 
@@ -288,6 +290,7 @@ int main(int argc, char *argv[]) {
   double **features;
   int *grades;
   double *w;
+  double step_size;
   double *scores; // w * phi for every feature vector phi
   int num_features, num_samples;
   int sample_ind, other_sample_ind, feature_ind;
@@ -316,6 +319,7 @@ int main(int argc, char *argv[]) {
   scores = (double *)malloc(num_samples * sizeof(double));
   grades = (int *)malloc(num_samples * sizeof(int));
   num_updates = 0;
+  step_size = 0.0000003;
   
   for (sample_ind=0; sample_ind < num_samples; ++sample_ind) {
     fgets(line, 1024, fp);
@@ -335,13 +339,13 @@ int main(int argc, char *argv[]) {
     printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
 
     // cur_objective = stochastic_gradient_descent(w, features, grades, &num_updates, num_samples, num_features);
-    cur_objective = gradient_descent(w, features, grades, num_samples, num_features);
+    cur_objective = gradient_descent(w, &step_size, features, grades, num_samples, num_features);
     ++iter_cnt;
     printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
-    while (cur_objective < best_objective - EPSILON && iter_cnt < MAX_ITERS) {
+    while (iter_cnt < MAX_ITERS) { // && cur_objective < best_objective - EPSILON
       best_objective = cur_objective;
       // cur_objective = stochastic_gradient_descent(w, features, grades, &num_updates, num_samples, num_features);
-      cur_objective = gradient_descent(w, features, grades, num_samples, num_features);
+      cur_objective = gradient_descent(w, &step_size, features, grades, num_samples, num_features);
       ++iter_cnt;
       printf("Iteration %d: objective %f\n", iter_cnt, cur_objective);
     }
