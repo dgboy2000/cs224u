@@ -12,3 +12,17 @@ $ sudo python setup.py install
 
 To convert data to UTF-8:
 iconv -f WINDOWS-1252 -t "UTF-8//IGNORE" training_set_rel3.tsv > training_set_rel3.utf8ignore.tsv
+
+Installing mlpy:
+$ sudo port install py27-gsl
+$ wget http://sourceforge.net/projects/mlpy/files/mlpy%203.4.0/mlpy-3.4.0.tar.gz/download
+$ tar -xvf mlpy-3.4.0.tar.gz
+$ cd mlpy-3.4.0
+$ sudo python setup.py install
+
+Installing the python svmlight package:
+$ hg clone https://bitbucket.org/wcauchois/pysvmlight
+$ cd pysvmlight
+$ python setup.py build
+$ sudo python setup.py install
+$ python examples/simple.py
