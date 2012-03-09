@@ -1,4 +1,4 @@
-DEBUG = True
+DEBUG = False
 ESSAY_SETS = range(1, 9)
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
