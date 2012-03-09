@@ -27,7 +27,7 @@ OTHER_DISTS = {
     (5, 1): ['rater1_domain1', 'rater2_domain1'],
     (6, 1): ['rater1_domain1', 'rater2_domain1'],
     (7, 1): ['rater1_domain1', 'rater2_domain1'],
-    (8, 1): ['rater1_domain1', 'rater2_domain1', 'rater3_domain1'],
+    (8, 1): ['rater1_domain1', 'rater2_domain1'], #, 'rater3_domain1'], <- rater3 is incomplete
     }
 
 class DataSet:

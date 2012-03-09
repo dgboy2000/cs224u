@@ -20,6 +20,6 @@ class FeatureBase(object):
         return
 
     @abc.abstractmethod
-    def extractFeatures(self, ds):
+    def extractFeatures(self, ds, corpus):
         """Extracts features from a DataSet ds"""
         return

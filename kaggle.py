@@ -10,12 +10,6 @@ RUN_VAL = True
 RUN_KAGGLE = False
 RECOMPUTE_FEATURES = True
 
-if RECOMPUTE_FEATURES:
-    print "Removing old feature cache ... ",
-    for filename in glob.glob('cache/all_features.*.pickle'):
-        os.remove(filename)
-    print "Done"
-
 if RUN_VAL:
     train_mean_kappa = MeanKappaScore()
     val_mean_kappa = MeanKappaScore()

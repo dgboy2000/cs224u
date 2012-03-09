@@ -1,11 +1,12 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
 from learn import LinearRegression, SVM
 import math
 import os
 import cPickle as pickle
 from score import KappaScore, MeanKappaScore
 import numpy as np
+import params
 
 class Run:
     def __init__(self):
@@ -17,8 +18,9 @@ class Run:
         self.ds_train = None
         self.ds_test = None
         self.corpus = None
+        self.dist = None
 
-    def setup(self, train_fname, test_fname, essay_set, domain):
+    def setup(self, train_fname, test_fname, essay_set, domain, dist=None):
         self.ds_train = DataSet.DataSet()
         self.ds_train.importData(train_fname, essay_set=essay_set, domain_id=domain)
         self.ds_train.setTrainSet(True)
@@ -30,62 +32,91 @@ class Run:
         self.corpus = Corpus.Corpus()
         self.corpus.setCorpus(self.ds_train, self.ds_test)
 
+        self.dist = dist
+
         return
-        
-    def _extract_ds(self, ds):
-        feat = FeatureHeuristics.FeatureHeuristics()
-        feat.extractFeatures(ds)
 
-        spelling_feat = FeatureSpelling.FeatureSpelling()
-        spelling_feat.extractFeatures(ds)
-
-        transitions_feat = FeatureTransitions.FeatureTransitions()
-        transitions_feat.extractFeatures(ds)
-
-        lsi_feat = FeatureLSI.FeatureLSI()
-        lsi_feat.extractFeatures(ds, self.corpus)
-        
-        pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
-        pos_lsi_feat.extractFeatures(ds, self.corpus)
-
-        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
-        #    prompt_feat = FeaturePrompt.FeaturePrompt()
-        #    prompt_feat.extractFeatures(ds, self.corpus)
-
-        all_feats = list()
-        all_feats.append(feat)
-        all_feats.append(spelling_feat)
-        all_feats.append(transitions_feat)
-        all_feats.append(lsi_feat)
-        all_feats.append(pos_lsi_feat)
-        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
-        #    all_feats.append(prompt_feat)
-
-        feat_mat = Utils.combine_features(ds, all_feats)
-
-        return feat_mat
-
-    def extract(self):
-        fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (
-                 self.ds_train.getFilename(),
-                 self.ds_test.getFilename(),
-                 self.ds_train.getEssaySet(),
-                 self.ds_train.getDomain())
+    def _extract_feat(self, ds, feat):
+        feat_type = type(feat).__name__
+        # do caching and stuff
+        fname = 'cache/feature_mat.%s.%s.set%d.dom%d.pickle' % (
+                 feat_type,
+                 ds.getFilename(),
+                 ds.getEssaySet(),
+                 ds.getDomain())
 
         try:
+            if (feat_type not in params.FEATURE_CACHE) or not params.FEATURE_CACHE[feat_type]:
+                raise Exception('Do not use cache.')
             f = open(fname, 'rb')
-            print "Using pickled features for essay set %d, domain %d." % (
-                   self.ds_train.getEssaySet(), self.ds_train.getDomain())
-            self.train_feat_mat, self.test_feat_mat = pickle.load(f)
+            feat_mat = pickle.load(f)
         except:
-            self.corpus.genLSA()
-            self.corpus.genPOS_LSA()
+            if params.DEBUG:
+                print "Calculating ", feat_type
+            feat.extractFeatures(ds, self.corpus)
+            feat_mat = feat.getFeatureMatrix()
+            pickle.dump(feat_mat, open(fname, 'w'))
 
-            self.train_feat_mat = self._extract_ds(self.ds_train)
-            self.test_feat_mat = self._extract_ds(self.ds_test)
+        return feat_mat
+        
+    def _extract_ds(self, ds):
+        all_feats = list()
+        all_feats.append(self._extract_feat(ds, FeatureHeuristics.FeatureHeuristics()))
+        all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
+        all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
+        all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
+        all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
+        #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
+        #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
 
-            f = open(fname, 'w')
-            pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
+        return Utils.combine_features(ds, all_feats)
+
+    def extract(self):
+        #fname = 'cache/all_features.%s.%s.set%d.dom%d.pickle' % (
+        #         self.ds_train.getFilename(),
+        #         self.ds_test.getFilename(),
+        #         self.ds_train.getEssaySet(),
+        #         self.ds_train.getDomain())
+
+        #try:
+        #    f = open(fname, 'rb')
+        #    print "Using pickled features for essay set %d, domain %d." % (
+        #           self.ds_train.getEssaySet(), self.ds_train.getDomain())
+        #    self.train_feat_mat, self.test_feat_mat = pickle.load(f)
+        #except:
+        self.corpus.genLSA()
+        #self.corpus.genPOS_LSA()
+
+        self.train_feat_mat = self._extract_ds(self.ds_train)
+        self.test_feat_mat = self._extract_ds(self.ds_test)
+
+        #    f = open(fname, 'w')
+        #    pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
+
+        """
+        ## XXX: SPECIAL KIND OF FEATURE. It is dependent on the learner, so we will recalc these features
+        ##      even if there is cache.
+        other_pgrades = list()
+        for other_grades in self.ds_train.getOtherDistsGrades():
+            # TODO use raw predict score instead of the resolved one ??
+            other_model = self._learn(self.train_feat_mat, other_grades)
+            other_train_pgrades = np.asarray(
+                [other_model.predict(self.train_feat_mat[i, :]) for i in range(self.train_feat_mat.shape[0])])
+            other_test_pgrades = np.asarray(
+                [other_model.predict(self.test_feat_mat[i, :]) for i in range(self.test_feat_mat.shape[0])])
+
+            other_train_pgrades = np.asarray(other_train_pgrades).reshape(len(other_train_pgrades), 1)
+            other_test_pgrades = np.asarray(other_test_pgrades).reshape(len(other_test_pgrades), 1)
+            other_pgrades.append((other_train_pgrades,other_test_pgrades))
+
+        # If final matrix is actually JUST the predicted grades of the other dists, it does better on *some* sets.
+        self.train_feat_mat = np.zeros((self.train_feat_mat.shape[0], 0))
+        self.test_feat_mat = np.zeros((self.test_feat_mat.shape[0], 0))
+        for other_train_pgrades, other_test_pgrades in other_pgrades:
+            self.train_feat_mat = np.concatenate((self.train_feat_mat, other_train_pgrades), axis=1)
+            self.test_feat_mat = np.concatenate((self.test_feat_mat, other_test_pgrades), axis=1)
+        """
 
         # Normalize to unit mean/var
         self.train_feat_mat = np.asarray(self.train_feat_mat, dtype=np.float) # convert all to float
@@ -100,20 +131,27 @@ class Run:
 
         return
         
-    def learn(self):
+    def _learn(self, feat_mat, grades):
         learner = LinearRegression(intercept = True)
         #learner = SVM()
-        learner.train(self.train_feat_mat, self.ds_train.getGrades())
-       
-        self.model = learner
+        
+        learner.train(feat_mat, grades)
+        return learner
+
+    def learn(self):
+        self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
         return
 
-    def predict(self):
+    def _predict(self, feat_mat, model):
         round = False
         if self.ds_train.getEssaySet() == 8:
             round = True
-        self.train_pgrades = self.model.grade(self.train_feat_mat, {'round': round})
-        self.test_pgrades = self.model.grade(self.test_feat_mat, {'round': round})
+
+        return model.grade(feat_mat, {'round': round})
+
+    def predict(self):
+        self.train_pgrades = self._predict(self.train_feat_mat, self.model)
+        self.test_pgrades = self._predict(self.test_feat_mat, self.model)
         return
 
     def _eval_ds(self, ds, pgrades):

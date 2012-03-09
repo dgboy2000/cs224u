@@ -6,9 +6,9 @@ def combine_features(ds, feat_list):
     final_mat = np.zeros((ds.size(), 0))
 
     # Each 'feat' is an implementation of 'FeatureBase'
-    for feat in feat_list:
+    for feat_mat in feat_list:
         try:
-            final_mat = np.concatenate((final_mat, feat.getFeatureMatrix()), axis=1)
+            final_mat = np.concatenate((final_mat, feat_mat), axis=1)
         except:
             import pdb;pdb.set_trace()
 

@@ -26,7 +26,7 @@ class FeatureTransitions(object):
         """Returns ordered list of features."""
         return self.features
 
-    def extractFeatures(self, ds):
+    def extractFeatures(self, ds, corpus):
         """Extracts features from a DataSet ds"""
         lenfeats = list()
         for line in ds.getRawText():
