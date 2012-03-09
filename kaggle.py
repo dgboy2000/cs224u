@@ -1,15 +1,19 @@
 # Main running script
 
-from score import KappaScore, MeanKappaScore
-import Run
+import glob
 import os
+import Run
+from score import KappaScore, MeanKappaScore
 
 RUN_VAL = True
 RUN_KAGGLE = False
 RECOMPUTE_FEATURES = False
 
 if RECOMPUTE_FEATURES:
-    os.remove('cache/all_features.*.pickle') # TODO make this work.
+    print "Removing old feature cache ... ",
+    for filename in glob.glob('cache/all_features.*.pickle'):
+        os.remove(filename)
+    print "Done"
 
 if RUN_VAL:
     train_mean_kappa = MeanKappaScore()
