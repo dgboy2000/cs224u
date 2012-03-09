@@ -44,9 +44,9 @@ class Run:
 
         lsi_feat = FeatureLSI.FeatureLSI()
         lsi_feat.extractFeatures(ds, self.corpus)
-        
-        pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
-        pos_lsi_feat.extractFeatures(ds, self.corpus)
+
+        #pos_lsi_feat = FeaturePOS_LSI.FeaturePOS_LSI()
+        #pos_lsi_feat.extractFeatures(ds, self.corpus)
 
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #    prompt_feat = FeaturePrompt.FeaturePrompt()
@@ -57,7 +57,7 @@ class Run:
         all_feats.append(spelling_feat)
         all_feats.append(transitions_feat)
         all_feats.append(lsi_feat)
-        all_feats.append(pos_lsi_feat)
+        #all_feats.append(pos_lsi_feat)
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #    all_feats.append(prompt_feat)
 
@@ -79,7 +79,7 @@ class Run:
             self.train_feat_mat, self.test_feat_mat = pickle.load(f)
         except:
             self.corpus.genLSA()
-            self.corpus.genPOS_LSA()
+            #self.corpus.genPOS_LSA()
 
             self.train_feat_mat = self._extract_ds(self.ds_train)
             self.test_feat_mat = self._extract_ds(self.ds_test)

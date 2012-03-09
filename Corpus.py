@@ -88,10 +88,14 @@ class Corpus:
         ds2 = self.ds2
 
         documents = list()
-        for bow in ds1.getAllBoW():
-            documents.append(bow)
-        for bow in ds2.getAllBoW():
-            documents.append(bow)
+        bows = ds1.getAllBoW()
+        tags = ds1.getAllPOS()
+        for i in range(0, len(bows)):
+            documents.append(bows[i] + tags[i])
+        bows = ds2.getAllBoW()
+        tags = ds2.getAllPOS()
+        for i in range(0, len(bows)):
+            documents.append(bows[i] + tags[i])
 
         # Remove stop words
         i = 0
