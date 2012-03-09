@@ -2,12 +2,13 @@
 
 import glob
 import os
+import params
 import Run
 from score import KappaScore, MeanKappaScore
 
 RUN_VAL = True
 RUN_KAGGLE = False
-RECOMPUTE_FEATURES = False
+RECOMPUTE_FEATURES = True
 
 if RECOMPUTE_FEATURES:
     print "Removing old feature cache ... ",
@@ -19,7 +20,7 @@ if RUN_VAL:
     train_mean_kappa = MeanKappaScore()
     val_mean_kappa = MeanKappaScore()
 
-    for essay_set in range(1, 9):
+    for essay_set in params.ESSAY_SETS:
         total_domains = 1
         if essay_set == 2:
             total_domains = 2
@@ -43,7 +44,7 @@ if RUN_VAL:
 if RUN_KAGGLE:
     fd = open('data/kaggle_out.tsv', 'w')
     fd.write('prediction_id\tessay_id\tessay_set\tessay_weight\tpredicted_score\n')
-    for essay_set in range(1, 9):
+    for essay_set in params.ESSAY_SETS:
         total_domains = 1
         if essay_set == 2:
             total_domains = 2
