@@ -17,8 +17,9 @@ class Run:
         self.ds_train = None
         self.ds_test = None
         self.corpus = None
+        self.dist = None
 
-    def setup(self, train_fname, test_fname, essay_set, domain):
+    def setup(self, train_fname, test_fname, essay_set, domain, dist=None):
         self.ds_train = DataSet.DataSet()
         self.ds_train.importData(train_fname, essay_set=essay_set, domain_id=domain)
         self.ds_train.setTrainSet(True)
@@ -29,6 +30,8 @@ class Run:
 
         self.corpus = Corpus.Corpus()
         self.corpus.setCorpus(self.ds_train, self.ds_test)
+
+        self.dist = dist
 
         return
         
@@ -87,6 +90,30 @@ class Run:
             f = open(fname, 'w')
             pickle.dump((self.train_feat_mat, self.test_feat_mat), f)
 
+        """
+        ## XXX: SPECIAL KIND OF FEATURE. It is dependent on the learner, so we will recalc these features
+        ##      even if there is cache.
+        other_pgrades = list()
+        for other_grades in self.ds_train.getOtherDistsGrades():
+            # TODO use raw predict score instead of the resolved one ??
+            other_model = self._learn(self.train_feat_mat, other_grades)
+            other_train_pgrades = np.asarray(
+                [other_model.predict(self.train_feat_mat[i, :]) for i in range(self.train_feat_mat.shape[0])])
+            other_test_pgrades = np.asarray(
+                [other_model.predict(self.test_feat_mat[i, :]) for i in range(self.test_feat_mat.shape[0])])
+
+            other_train_pgrades = np.asarray(other_train_pgrades).reshape(len(other_train_pgrades), 1)
+            other_test_pgrades = np.asarray(other_test_pgrades).reshape(len(other_test_pgrades), 1)
+            other_pgrades.append((other_train_pgrades,other_test_pgrades))
+
+        # If final matrix is actually JUST the predicted grades of the other dists, it does better on *some* sets.
+        self.train_feat_mat = np.zeros((self.train_feat_mat.shape[0], 0))
+        self.test_feat_mat = np.zeros((self.test_feat_mat.shape[0], 0))
+        for other_train_pgrades, other_test_pgrades in other_pgrades:
+            self.train_feat_mat = np.concatenate((self.train_feat_mat, other_train_pgrades), axis=1)
+            self.test_feat_mat = np.concatenate((self.test_feat_mat, other_test_pgrades), axis=1)
+        """
+
         # Normalize to unit mean/var
         self.train_feat_mat = np.asarray(self.train_feat_mat, dtype=np.float) # convert all to float
         self.test_feat_mat = np.asarray(self.test_feat_mat, dtype=np.float)
@@ -100,20 +127,27 @@ class Run:
 
         return
         
-    def learn(self):
+    def _learn(self, feat_mat, grades):
         learner = LinearRegression(intercept = True)
         #learner = SVM()
-        learner.train(self.train_feat_mat, self.ds_train.getGrades())
-       
-        self.model = learner
+        
+        learner.train(feat_mat, grades)
+        return learner
+
+    def learn(self):
+        self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
         return
 
-    def predict(self):
+    def _predict(self, feat_mat, model):
         round = False
         if self.ds_train.getEssaySet() == 8:
             round = True
-        self.train_pgrades = self.model.grade(self.train_feat_mat, {'round': round})
-        self.test_pgrades = self.model.grade(self.test_feat_mat, {'round': round})
+
+        return model.grade(feat_mat, {'round': round})
+
+    def predict(self):
+        self.train_pgrades = self._predict(self.train_feat_mat, self.model)
+        self.test_pgrades = self._predict(self.test_feat_mat, self.model)
         return
 
     def _eval_ds(self, ds, pgrades):
