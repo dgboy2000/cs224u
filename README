@@ -26,3 +26,7 @@ $ cd pysvmlight
 $ python setup.py build
 $ sudo python setup.py install
 $ python examples/simple.py
+
+Installing the python libsvm wrapper
+$ cs learn/libsvm-3.11/python
+$ make
