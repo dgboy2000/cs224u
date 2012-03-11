@@ -46,6 +46,7 @@ static void (*svm_print_string) (const char *) = &print_string_stdout;
 #if 1
 static void info(const char *fmt,...)
 {
+    return;
 	char buf[BUFSIZ];
 	va_list ap;
 	va_start(ap,fmt);
