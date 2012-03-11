@@ -5,8 +5,8 @@ import os
 import svmlight
 import sys
 
-class RankSVM:
-    """Python interface to rank svm in svm_light."""
+class RegressionSVM:
+    """Python interface to regression svm in svm_light."""
     
     def __init__(self):
         self.model = None
@@ -27,7 +27,7 @@ class RankSVM:
             feature_list = [(feat_ind+1,feat_val) for feat_ind,feat_val in enumerate(features[essay_ind,:])]
             training_data.append((grade, feature_list, 1))
 
-        self.model = svmlight.learn(training_data, type='ranking', verbosity=0, C=100)
+        self.model = svmlight.learn(training_data, type='regression', kernel='polynomial', poly_degree=2, verbosity=0, C=100)
         
         grade_counts = {}
         for grade in grades:
