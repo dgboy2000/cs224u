@@ -11,6 +11,8 @@ class SVM:
     test_file = os.path.join(tmp_path, 'svm_rank_test.dat')
     predictions_file = os.path.join(tmp_path, 'svm_rank_predictions')
     
+    os.system('cd learn && make > /dev/null')
+    
     def __init__(self):
         pass
     def train(self, features, grades):

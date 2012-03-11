@@ -3,3 +3,4 @@
 *.o
 output/
 learn/cache/
+cache/features.essay*.domain*.pickle

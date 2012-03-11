@@ -22,6 +22,13 @@ class Corpus:
         self.tfidf = None
         self.pos_tfidf = None
         self.pos_lsi = None
+        self.ds1 = None
+        self.ds2 = None
+        self.word_dicionary = None
+
+    def getWordDictionary(self):
+        """As degined for LSI (see genLSI for details)."""
+        return self.word_dictionary
 
     def getWords(self):
         return self.corpus
@@ -29,15 +36,10 @@ class Corpus:
     def getPOS(self):
         return self.pos_corpus
 
-    def setCorpus(self, type, ds=None, ds2=None):
-        if type == 'english-web':
-            self.corpus = nltk.corpus.genesis.words('english-web.txt')
-        elif type == 'ds':
-            self.getFromDataSet(ds, ds2)
-        else:
-            raise Exception('Corpus does not exist.')
+    def setCorpus(self, ds, ds2):
+        self.ds1 = ds
+        self.ds2 = ds2
 
-    def getFromDataSet(self, ds, ds2=None):
         c = list()
         for line in ds.getRawText():
             c += LanguageUtils.tokenize(line)
@@ -60,7 +62,13 @@ class Corpus:
 
         self.pos_corpus = pos_corpus
 
-    def genPOS_LSA(self, ds1, ds2):
+    def genPOS_LSA(self):
+        print "DEPRECATED. TO USE AGAIN, MAKE SURE YOU DON'T USE THE POS TAGS IN genPOS()."
+        exit(0) # Fail HARD.
+
+        ds1 = self.ds1
+        ds2 = self.ds2
+
         documents = list()
         for tags in ds1.getAllPOS():
             documents.append(tags)
@@ -78,12 +86,41 @@ class Corpus:
 
         self.pos_lsi = gensim.models.LsiModel(self.pos_tfidf[mm_corpus], id2word=dictionary, num_topics=params.POS_LSI_TOPICS, power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
 
-    def genLSA(self, ds1, ds2):
+    def genLSA(self):
+        # To cache...
+        # self.lsi, self.tfidf, mm_corpus, self.word_dictionary
+
+        ds1 = self.ds1
+        ds2 = self.ds2
+
+        cache_fname = 'cache/lsa.%s.%s.set%d.pickle' % (
+            ds1.getFilename(),
+            ds2.getFilename(),
+            ds1.getEssaySet())
+
+        try:
+            if not params.FEATURE_CACHE['genLSA']:
+                raise Exception('Do not cache genLSA.')
+            f = open(cache_fname, 'rb')
+            self.lsi, self.tfidf, mm_corpus, self.word_dictionary = pickle.load(f)
+        
+            # split into two corpii (haha) and ds?.setGensimCorpus(mm)
+            ds1.setGensimCorpus(mm_corpus[0:ds1.size()])
+            ds2.setGensimCorpus(mm_corpus[ds1.size():(ds1.size()+ds2.size())])
+
+            return
+        except:
+            pass
+
         documents = list()
-        for bow in ds1.getAllBoW():
-            documents.append(bow)
-        for bow in ds2.getAllBoW():
-            documents.append(bow)
+        bows = ds1.getAllBoW()
+        tags = ds1.getAllPOS()
+        for i in range(0, len(bows)):
+            documents.append(bows[i] + tags[i])
+        bows = ds2.getAllBoW()
+        tags = ds2.getAllPOS()
+        for i in range(0, len(bows)):
+            documents.append(bows[i] + tags[i])
 
         # Remove stop words
         i = 0
@@ -113,6 +150,7 @@ class Corpus:
 
         # create overall corpus
         dictionary = gensim.corpora.Dictionary(texts)
+        self.word_dictionary = dictionary
         #dictionary.save(TODO)
 
         mm_corpus = [dictionary.doc2bow(text) for text in texts]
@@ -124,8 +162,11 @@ class Corpus:
 
         self.lsi = gensim.models.LsiModel(self.tfidf[mm_corpus], id2word=dictionary, num_topics=params.LSI_TOPICS,
                                           power_iters=params.LSI_POWER_ITERS, extra_samples=params.LSI_EXTRA_SAMPLES)
-        # For some reason can't use this interchangeably:
-        #   self.lsi = gensim.models.LdaModel(corpus=tfidf, num_topics=params.LSI_TOPICS)
+
+        f = open(cache_fname, 'w')
+        pickle.dump((self.lsi, self.tfidf, mm_corpus, self.word_dictionary), f)
+
+        return
 
     def getLSA(self):
         return self.lsi

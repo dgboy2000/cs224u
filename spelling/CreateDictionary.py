@@ -9,6 +9,7 @@ class CreateDictionary:
     word_splitter = nltk.WordPunctTokenizer()
     spell_checker = SpellChecker()
     dictionary_fn = 'cache/dictionary.pkl'
+    suggestions_fn = 'cache/spell_suggestions.pkl'
 
     def __init__(self):
         if not os.path.exists(CreateDictionary.dictionary_fn):
@@ -16,6 +17,9 @@ class CreateDictionary:
 
     def getDictionary(self):
         return pickle.load(open(CreateDictionary.dictionary_fn, 'r'))
+    
+    def getSpellingSuggestions(self):
+        return pickle.load(open(CreateDictionary.suggestions_fn, 'r'))
 
     def addValidWords(self, ds, word_list):
         for line in ds.getRawText():
@@ -26,6 +30,7 @@ class CreateDictionary:
     def extractCounts(self):
         word_list = list()
         dictionary = set()
+        suggestions = {}
 
         for essay_set in range(1, 9): 
             ds_train = DataSet.DataSet()
@@ -47,9 +52,14 @@ class CreateDictionary:
         word_set.discard('')
 
         for word in word_set:
-            if CreateDictionary.spell_checker.extractSpellingSuggestions(word) is None:
+            result = CreateDictionary.spell_checker.extractSpellingSuggestions(word)
+            if result is None:
                 dictionary.add(word)
+                
                 if len(dictionary)%100 is 0:
-                    print len(dictionary)
+                    print ('dictionary word count = ' + str(len(dictionary)))
+            else:
+                suggestions[word] = result
 
         pickle.dump(dictionary, open(CreateDictionary.dictionary_fn, 'w'))
+        pickle.dump(suggestions, open(CreateDictionary.suggestions_fn, 'w'))

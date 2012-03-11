@@ -37,18 +37,19 @@ class FeatureTransitions(object):
             word_set = set(words)
             word_set.discard('')
             unique_transitions_count = 0
-            transitions_count = 0
-
-            for word in word_set:
-                if word in FeatureTransitions.transitions:
-                    unique_transitions_count += 1
+            transitions_count = 0 
             
             for word in words:
                 if word in FeatureTransitions.transitions:
                     transitions_count += 1
             
+            for word in word_set:
+                if word in FeatureTransitions.transitions:
+                    unique_transitions_count += 1
+            
+            #curfeat.append(transitions_count)
             curfeat.append(unique_transitions_count)
-            curfeat.append(unique_transitions_count/len(words))
+            #curfeat.append(unique_transitions_count/len(words))
             
             lenfeats.append(curfeat)
 

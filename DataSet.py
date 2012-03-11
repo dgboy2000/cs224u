@@ -27,7 +27,7 @@ OTHER_DISTS = {
     (5, 1): ['rater1_domain1', 'rater2_domain1'],
     (6, 1): ['rater1_domain1', 'rater2_domain1'],
     (7, 1): ['rater1_domain1', 'rater2_domain1'],
-    (8, 1): ['rater1_domain1', 'rater2_domain1', 'rater3_domain1'],
+    (8, 1): ['rater1_domain1', 'rater2_domain1'], #, 'rater3_domain1'], <- rater3 is incomplete
     }
 
 class DataSet:
@@ -41,19 +41,12 @@ class DataSet:
         self.prediction_ids = list()
         self.essay_ids = list()
         self.essay_set = None
-        self.file_id = 'default'
         self.file_name = ''
         self.pos_tags = list()
         self.bigram_pos_tags = list()
         self.trigram_pos_tags = list()
         self.gensim_corpus = ()
         self.other_dists_grades = list()
-
-    def getID(self):
-        return self.file_id
-
-    def setID(self, file_id):
-        self.file_id = file_id
 
     def getFilename(self):
         return self.file_name
@@ -293,3 +286,25 @@ class DataSet:
     def getGrades(self):
         # TODO throw exception if grades is empty
         return np.asarray(self.grades)
+        
+    def setGrades(self, grades):
+        self.grades = grades
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

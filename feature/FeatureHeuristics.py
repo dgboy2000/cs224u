@@ -26,7 +26,7 @@ class FeatureHeuristics(object):
         """Returns numpy matrix of features"""
         return self.features
 
-    def extractFeatures(self, ds):
+    def extractFeatures(self, ds, corpus):
         """Extracts features from a DataSet ds"""
         lenfeats = list()
         for line in ds.getRawText():
@@ -64,6 +64,11 @@ class FeatureHeuristics(object):
             curfeat.append(num6Words)
             curfeat.append(num7Words)
             curfeat.append(num8Words)
+            #capwords = [word for word in words if word == word.capitalize()]
+            #curfeat.append(len(capwords))
+            curfeat.append(words.count('I'))
+            curfeat.append(words.count('i'))
+            #print curfeat
 
             lenfeats.append(curfeat)
 
