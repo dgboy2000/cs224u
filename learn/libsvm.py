@@ -1,12 +1,16 @@
-from cStringIO import StringIO
 from curve import Curve
+import inspect
 import numpy as np
 import os
-import svmlight
 import sys
 
-class RankSVM:
-    """Python interface to rank svm in svm_light."""
+learn_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
+sys.path.append(os.path.join(learn_path, 'libsvm-3.11/python'))
+from svmutil import *
+
+
+class LibSVM:
+    """Python interface to regression svm in libsvm."""
     
     def __init__(self):
         self.model = None
@@ -20,14 +24,9 @@ class RankSVM:
         self.min_grade = min(grades)
         self.max_grade = max(grades)
         num_essays, num_features = features.shape
-        
-        # Convert data into svmlight format [(label, [(feature, value), ...], query_id), ...]
-        training_data = []
-        for essay_ind,grade in enumerate(grades):
-            feature_list = [(feat_ind+1,feat_val) for feat_ind,feat_val in enumerate(features[essay_ind,:])]
-            training_data.append((grade, feature_list, 1))
 
-        self.model = svmlight.learn(training_data, type='ranking', verbosity=0, C=100)
+        training_data = self.format_features(features)
+        self.model = svm_train(grades, training_data, '-c 50 -s 3')
         
         grade_counts = {}
         for grade in grades:
@@ -35,25 +34,26 @@ class RankSVM:
                 grade_counts[grade] = 0
             grade_counts[grade] += 1
         self.grade_probs = dict([(grade, count/float(num_essays)) for grade,count in grade_counts.iteritems()])
-        scores = self.classify_rank_svm(features)
+        scores = self.predict(features)
         self.curve = Curve(scores, probs=self.grade_probs)
         
     def grade(self, features, options={}):
-        scores = self.classify_rank_svm(features)
+        scores = self.predict(features)
         return [self.curve.curve(score) for score in scores]
         
-    def classify_rank_svm(self, features):
-        """Run rank_svm to rank the specified essay features (numpy matrix/array).
+    def format_features(self, features):
+        """Convert features into libsvm format [{1:feat1, 2:feat2, 3:feat3, ...}, {...},...]"""
+        data = []
+        for essay_ind in range(features.shape[0]):
+            feature_dict = dict([(feat_ind+1,feat_val) for feat_ind,feat_val in enumerate(features[essay_ind,:])])
+            data.append(feature_dict)
+        return data
+        
+    def predict(self, features):
+        """Run regression svm to score the specified essay features (numpy matrix/array).
         Returns a vector of scores of the specified essays."""
         assert self.model is not None
-
-        # Convert data into svmlight format [(label, [(feature, value), ...], query_id), ...]
-        test_data = []
-        for essay_ind,feat_vec in enumerate(features):
-            feature_list = [(feat_ind+1,feat_val) for feat_ind,feat_val in enumerate(feat_vec)]
-            test_data.append((0, feature_list, 1))
-
-        return svmlight.classify(self.model, test_data)
+        return svm_predict(range(features.shape[0]), self.format_features(features), self.model)[0]
             
             
             
