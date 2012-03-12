@@ -1,11 +1,11 @@
-from learn import RankSVM, RegressionSVM
+from learn import LibSVM
 import numpy
 import os
 import random
 import unittest
 
-class Test_svmlight(unittest.TestCase):
-    """Test our rank svm implementation."""
+class Test_libsvm(unittest.TestCase):
+    """Test our lib svm implementation."""
 
     def simpleTestGradesAndFeatures(self, num_grades):
         grades = range(num_grades)
@@ -15,26 +15,14 @@ class Test_svmlight(unittest.TestCase):
             features.append([float(grade) / 2 + r, float(grade) / 2 - r])
         return grades, features
         
-    def test_rank_svm(self):
-        svm = RankSVM()
-        
-        num_grades = 15
-        grades, features = self.simpleTestGradesAndFeatures(num_grades)
-        features = numpy.asarray(features)
-        svm.train(features, grades)
-        scores = [(ind, float(score)) for ind,score in enumerate(svm.classify_rank_svm(features))]
-        scores.sort(key=lambda tup: tup[1])
-        ranking = [tup[0] for tup in scores]
-        self.assertEqual(range(num_grades), ranking)
-        
     def test_regression_svm(self):
-        svm = RegressionSVM()
+        svm = LibSVM()
 
         num_grades = 15
         grades, features = self.simpleTestGradesAndFeatures(num_grades)
         features = numpy.asarray(features)
         svm.train(features, grades)
-        scores = [(ind, float(score)) for ind,score in enumerate(svm.classify_rank_svm(features))]
+        scores = [(ind, float(score)) for ind,score in enumerate(svm.predict(features))]
         scores.sort(key=lambda tup: tup[1])
         ranking = [tup[0] for tup in scores]
         self.assertEqual(range(num_grades), ranking)

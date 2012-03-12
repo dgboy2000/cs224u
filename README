@@ -34,3 +34,7 @@ $ python examples/simple.py
 
 Source of unigrams/bigrams (entire .uk domain):
   http://wacky.sslmit.unibo.it/doku.php?id=frequency_lists
+
+Installing the python libsvm wrapper
+$ cs learn/libsvm-3.11/python
+$ make
