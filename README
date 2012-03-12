@@ -13,7 +13,7 @@ $ sudo python setup.py install
 To convert data to UTF-8:
 iconv -f WINDOWS-1252 -t "UTF-8//IGNORE" training_set_rel3.tsv > training_set_rel3.utf8ignore.tsv
 
-To get Hunspell spellchecker to work:
+Install hunspell spellchecker:
 1. Go to http://hunspell.sourceforge.net/
 2. Download the source (top of page, or Source)
 3. configure / make / make install
@@ -31,3 +31,6 @@ $ cd pysvmlight
 $ python setup.py build
 $ sudo python setup.py install
 $ python examples/simple.py
+
+Source of unigrams/bigrams (entire .uk domain):
+  http://wacky.sslmit.unibo.it/doku.php?id=frequency_lists

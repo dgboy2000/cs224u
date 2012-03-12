@@ -61,5 +61,7 @@ class CreateDictionary:
             else:
                 suggestions[word] = result
 
+        dictionary.add('facebook')
+
         pickle.dump(dictionary, open(CreateDictionary.dictionary_fn, 'w'))
         pickle.dump(suggestions, open(CreateDictionary.suggestions_fn, 'w'))
