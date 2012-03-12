@@ -31,11 +31,11 @@ OTHER_DISTS = {
     }
 
 class DataSet:
-    def __init__(self):
+    def __init__(self, trainSetFlag):
         self.colNames = list()
         self.ds_size = -1
         self.textOnly = list() # just a list of the text
-        self.trainSetFlag = False
+        self.trainSetFlag = trainSetFlag
         self.domain_id = 1
         self.grades = list()
         self.prediction_ids = list()
@@ -94,7 +94,8 @@ class DataSet:
 
         # get master grades
         domain_col_name = 'domain%d_score' % self.getDomain()
-        self.grades = [datamap[domain_col_name][i] for i in inds]
+        if domain_col_name in datamap:
+            self.grades = [datamap[domain_col_name][i] for i in inds]
 
         # get textOnly
         self.textOnly = [datamap['essay'][i] for i in inds]
@@ -108,10 +109,13 @@ class DataSet:
             self.prediction_ids = [datamap[pred_col_name][i] for i in inds]
 
         # get other_dists
-        other_dists_cols = OTHER_DISTS[(self.getEssaySet(), self.getDomain())]
-        self.other_dists_grades = list()
-        for dist_col_name in other_dists_cols:
-            self.other_dists_grades.append([datamap[dist_col_name][i] for i in inds])
+        if (self.isTrainSet()):
+            other_dists_cols = OTHER_DISTS[(self.getEssaySet(), self.getDomain())]
+            self.other_dists_grades = list()
+            for dist_col_name in other_dists_cols:
+                self.other_dists_grades.append([datamap[dist_col_name][i] for i in inds])
+        else:
+            self.other_dists_grades = list()
 
         return
 

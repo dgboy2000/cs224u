@@ -8,7 +8,6 @@ from score import KappaScore, MeanKappaScore
 
 RUN_VAL = True
 RUN_KAGGLE = False
-RECOMPUTE_FEATURES = False
 
 if RUN_VAL:
     train_mean_kappa = MeanKappaScore()
@@ -50,5 +49,5 @@ if RUN_KAGGLE:
             run.learn()
             run.predict()
 
-        run.outputKaggle(fd)
+            run.outputKaggle(fd)
 
