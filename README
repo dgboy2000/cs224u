@@ -38,3 +38,10 @@ Source of unigrams/bigrams (entire .uk domain):
 Installing the python libsvm wrapper
 $ cs learn/libsvm-3.11/python
 $ make
+
+Spell-correcting the datasets:
+$ python
+>>> from spelling.SpellCorrector import SpellCorrector
+>>> sc = SpellCorrector()
+>>> sc.correctEssaySets('data/c_train.utf8ignore.tsv', 'data/c_train.corrected.tsv')
+    (repeat for each dataset file)

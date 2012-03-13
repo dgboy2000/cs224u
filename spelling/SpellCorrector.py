@@ -89,7 +89,6 @@ class SpellCorrector:
         output_file = open(filename_out, 'w')
 
         for row in reader:
-            print row[0]
             essay = row[2].strip('"')
             output_file.write(self.correctEssay(essay) + '\n')
         output_file.close() 
