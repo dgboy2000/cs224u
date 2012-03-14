@@ -139,11 +139,11 @@ void predict(FILE *input, FILE *output)
 	}
 	if (svm_type==NU_SVR || svm_type==EPSILON_SVR)
 	{
-		printf("Mean squared error = %g (regression)\n",error/total);
-		printf("Squared correlation coefficient = %g (regression)\n",
-		       ((total*sumpt-sump*sumt)*(total*sumpt-sump*sumt))/
-		       ((total*sumpp-sump*sump)*(total*sumtt-sumt*sumt))
-		       );
+    // printf("Mean squared error = %g (regression)\n",error/total);
+    // printf("Squared correlation coefficient = %g (regression)\n",
+    //        ((total*sumpt-sump*sumt)*(total*sumpt-sump*sumt))/
+    //        ((total*sumpp-sump*sump)*(total*sumtt-sumt*sumt))
+    //        );
 	}
 	else
 		printf("Accuracy = %g%% (%d/%d) (classification)\n",

@@ -26,7 +26,7 @@ class FeatureTransitions(object):
         """Returns ordered list of features."""
         return self.features
 
-    def extractFeatures(self, ds, corpus):
+    def extractFeatures(self, ds):
         """Extracts features from a DataSet ds"""
         lenfeats = list()
         for line in ds.getRawText():
@@ -37,18 +37,19 @@ class FeatureTransitions(object):
             word_set = set(words)
             word_set.discard('')
             unique_transitions_count = 0
-            transitions_count = 0
-
-            for word in word_set:
-                if word in FeatureTransitions.transitions:
-                    unique_transitions_count += 1
+            transitions_count = 0 
             
             for word in words:
                 if word in FeatureTransitions.transitions:
                     transitions_count += 1
             
-            curfeat.append(float(unique_transitions_count))
-            curfeat.append(float(unique_transitions_count)/float(len(words)))
+            for word in word_set:
+                if word in FeatureTransitions.transitions:
+                    unique_transitions_count += 1
+            
+            #curfeat.append(transitions_count)
+            curfeat.append(unique_transitions_count)
+            #curfeat.append(unique_transitions_count/len(words))
             
             lenfeats.append(curfeat)
 

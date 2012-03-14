@@ -9,6 +9,7 @@ class SpellChecker:
         self._f.fromchild.readline() #skip the credit line
 
     def extractSpellingSuggestions(self, word):
+        print word
         self._f.tochild.write(word + '\n')
         self._f.tochild.flush()
         s = self._f.fromchild.readline().strip().lower()

@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pickle
 from spelling.CreateDictionary import CreateDictionary
+from spelling.SpellCorrector import SpellCorrector
 from spelling.WordCounter import WordCounter
 
 class FeatureSpelling(object):
@@ -11,6 +12,7 @@ class FeatureSpelling(object):
     word_splitter = nltk.WordPunctTokenizer()
     dictionary = CreateDictionary().getDictionary()
     word_count = WordCounter().getCounts()
+    spell_corrector = SpellCorrector()
 
     def __init__(self):
         self.features = np.array(())
@@ -28,7 +30,7 @@ class FeatureSpelling(object):
         """Returns ordered list of features."""
         return self.features
 
-    def extractFeatures(self, ds, corpus):
+    def extractFeatures(self, ds):
         """Extracts features from a DataSet ds"""
         lenfeats = list()
         for line in ds.getRawText():
