@@ -13,7 +13,7 @@ class SVM:
     
     os.system('cd learn && make > /dev/null')
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         pass
     def train(self, features, grades):
         """Train a rank_svm on the specified features and grades.

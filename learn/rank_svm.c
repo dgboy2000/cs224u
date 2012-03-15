@@ -7,9 +7,10 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 #define ETA 0.000002
-#define C 100.0
+#define C 50.0
 #define EPSILON 0.000001
 #define MAX_ITERS 200
+#define MAX_STEP_SIZE 20
 
 // a * b
 double dot_product(double *a, double *b, int n) {
@@ -171,7 +172,7 @@ double take_gradient_step(double *w, double *grad, double *eta, double **feature
     else step_size = 2;
   }
   
-  step_size = MIN(step_size, 20);
+  step_size = MIN(step_size, MAX_STEP_SIZE);
   vec_add(w, grad, -*eta*step_size, num_features);
   final_obj = compute_objective(w, features, grades, num_samples, num_features);
   if (final_obj > obj_2) {
@@ -182,6 +183,13 @@ double take_gradient_step(double *w, double *grad, double *eta, double **feature
       vec_add(w, grad, *eta*(step_size-2), num_features);            
     }
     final_obj = obj_2;
+  }
+  
+  // Adust step size
+  if (step_size == MAX_STEP_SIZE) {
+    *eta *= 1.4;
+  } else if (obj_1 > obj_0) {
+    *eta /= 1.2;
   }
   
   free(new_w);
@@ -330,6 +338,7 @@ int main(int argc, char *argv[]) {
 
   if (argc == 3) {
     // Train
+    printf("Training with %d samples and %d features\n", num_samples, num_features);
     for (feature_ind=0; feature_ind<num_features; ++feature_ind) {
       w[feature_ind] = 0;
     }

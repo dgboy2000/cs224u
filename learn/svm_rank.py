@@ -8,7 +8,7 @@ import sys
 class RankSVM:
     """Python interface to rank svm in svm_light."""
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.model = None
     def train(self, features, grades):
         """Train a rank_svm on the specified features and grades.

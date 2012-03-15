@@ -16,7 +16,7 @@ class LibSVM:
     quadratic_params = '-c 200 -s 3 -t 1 -r 1 -d 2'
     cubic_params = '-c 100 -s 3 -t 1 -r 0.4 -d 3'
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.model = None
     def train(self, features, grades):
         """Train a rank_svm on the specified features and grades.

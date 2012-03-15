@@ -132,8 +132,8 @@ class Run:
         return
         
     def _learn(self, feat_mat, grades):
-        learner = LinearRegression(intercept = True)
-        #learner = SVM()
+        learner = LinearRegression(intercept = True, debug = params.DEBUG)
+        # learner = SVM(debug = params.DEBUG)
         
         learner.train(feat_mat, grades)
         return learner

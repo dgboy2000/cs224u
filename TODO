@@ -24,12 +24,17 @@ DATA EXPLORATION TODOs:
 - Look at x/y plot of projected 1-dimensional feature vs grades for each grader
 - FEATURE IDEA: What is the document similarity between the answer and the prompt???
 
-LEARNING IDEAS:
+LEARNING:
 cross validation framework to set SVM parameters. specify validation set, svm tries a few parameter settings and picks the best one on the validation data
-non-linear kernel
-numerical optimization of learning: save last 3 parameter vectors and objective scores, take a quadratic Newton-descent type step
 when stochastic gradient descent is close to convergence, switch to a few iterations of gradient descent? newton's method?
 anneal eta down to 0 as we converge
+max ent models for regression
+weighted nearest neighbor by some criterion
+svm takes command line params
+nonlinear regression
+feature selection in linear regression
+naive bayes
+
 
 do feature selection by essay set
 
