@@ -49,5 +49,5 @@ if RUN_KAGGLE:
             run.learn()
             run.predict()
 
-        run.outputKaggle(fd)
+            run.outputKaggle(fd)
 

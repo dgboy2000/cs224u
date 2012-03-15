@@ -21,18 +21,19 @@ class Run:
         self.dist = None
 
     def setup(self, train_fname, test_fname, essay_set, domain, dist=None):
-        self.ds_train = DataSet.DataSet()
+        self.ds_train = DataSet.DataSet(True)
         self.ds_train.importData(train_fname, essay_set=essay_set, domain_id=domain)
-        self.ds_train.setTrainSet(True)
 
-        self.ds_test = DataSet.DataSet()
+        self.ds_test = DataSet.DataSet(False)
         self.ds_test.importData(test_fname, essay_set=essay_set, domain_id=domain)
-        self.ds_test.setTrainSet(False)
 
         self.corpus = Corpus.Corpus()
         self.corpus.setCorpus(self.ds_train, self.ds_test)
 
         self.dist = dist
+        
+        if params.DEBUG:
+            print "BEGIN train/test: ESSAY_SET #%d, DOMAIN %d" % (self.ds_train.getEssaySet(), self.ds_train.getDomain())
 
         return
 
@@ -65,8 +66,8 @@ class Run:
         all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
         all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
         all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
-        all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
-        #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        #all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
+        all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
 
@@ -86,7 +87,7 @@ class Run:
         #    self.train_feat_mat, self.test_feat_mat = pickle.load(f)
         #except:
         self.corpus.genLSA()
-        #self.corpus.genPOS_LSA()
+        self.corpus.genPOS_LSA()
 
         self.train_feat_mat = self._extract_ds(self.ds_train)
         self.test_feat_mat = self._extract_ds(self.ds_test)
@@ -155,7 +156,10 @@ class Run:
         return
 
     def _eval_ds(self, ds, pgrades):
-        kappa = KappaScore(ds.getGrades(), pgrades)
+        try:
+            kappa = KappaScore(ds.getGrades(), pgrades)
+        except:
+            import pdb;pdb.set_trace()
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
         """ TODO Later:
