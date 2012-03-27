@@ -30,10 +30,10 @@ class Corpus:
         """As degined for LSI (see genLSI for details)."""
         return self.word_dictionary
 
-    def getWords(self):
+    def getNGrams(self):
         return self.corpus
 
-    def getPOS(self):
+    def getAllPOS(self):
         return self.pos_corpus
 
     def setCorpus(self, ds, ds2):
@@ -41,23 +41,21 @@ class Corpus:
         self.ds2 = ds2
 
         c = list()
-        for line in ds.getRawText():
-            c += LanguageUtils.tokenize(line)
-            c += ('', '', '')
+        for bow in ds.getAllBoW():
+            c += bow
 
         if ds2:
-            for line in ds2.getRawText():
-                c += LanguageUtils.tokenize(line)
-                c += ('', '', '')
+            for bow in ds2.getAllBoW():
+                c += bow
 
         self.corpus = c
 
         pos_corpus = list()
-        for line in ds.getPOS():
+        for line in ds.getAllPOS():
             pos_corpus += line
 
         if ds2:
-            for line in ds2.getPOS():
+            for line in ds2.getAllPOS():
                 pos_corpus += line
 
         self.pos_corpus = pos_corpus
@@ -156,7 +154,7 @@ class Corpus:
             i += 1
 
         # Remove words that appear only once (TODO - maybe different min freq?)
-        counts = Counter(self.getWords())
+        counts = Counter(self.getNGrams())
 
         i = 0
         size = len(texts)
