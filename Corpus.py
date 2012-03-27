@@ -149,8 +149,13 @@ class Corpus:
         for word in stop_words:
             stop_dict[word] = 1
 
+        # TODO move this to a different file
+        stop_dict['&'] = 1
+
         for doc in documents:
-            texts.append([word for word in doc if word not in stop_dict])
+            # TODO following line assumes BIGRAMS
+            texts.append([word for word in doc if (type(word).__name__ == 'str' and word not in stop_dict) or
+                                                  (type(word).__name__ == 'tuple' and word[0] not in stop_dict and word[1] not in stop_dict)])
             i += 1
 
         # Remove words that appear only once (TODO - maybe different min freq?)
