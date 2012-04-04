@@ -5,7 +5,7 @@ To get Hunpos tagger to work:
 
 Install 'gensim':
 $ wget http://pypi.python.org/packages/source/g/gensim/gensim-0.8.3.tar.gz
-$ tar xzvf http://pypi.python.org/packages/source/g/gensim/gensim-0.8.3.tar.gz
+$ tar xzvf gensim-0.8.3.tar.gz
 $ cd gensim-0.8.3
 $ python setup.py test
 $ sudo python setup.py install

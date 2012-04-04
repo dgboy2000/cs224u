@@ -16,9 +16,9 @@ FEATURE_CACHE = {
     'FeatureHeuristics': True,
     'FeatureSpelling': True,
     'FeatureTransitions': True,
-    'FeatureLSI': False, # If set to False, I highly suggest setting genLSA to False.
+    'FeatureLSI': True, # If set to False, I highly suggest setting genLSA to False.
     'FeaturePrompt': True,
-    'FeaturePOS_LSI': False,
-    'genLSA': False,
+    'FeaturePOS_LSI': True,
+    'genLSA': True,
     'FeatureSim': True,
     }
