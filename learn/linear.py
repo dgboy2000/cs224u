@@ -59,9 +59,9 @@ class LinearRegression(object):
         self.used_features = range(num_features)
         best_features = self.get_feature_subset(self.features, self.used_features)    
         
-        if self.debug:
-            actual_score = self.get_bic_score(best_features, self.grades)
-            np.testing.assert_approx_equal(best_score, actual_score, err_msg="Expected score %f but found score %f" %(best_score, actual_score))
+        # if self.debug:
+        #     actual_score = self.get_bic_score(best_features, self.grades)
+        #     np.testing.assert_approx_equal(best_score, actual_score, err_msg="Expected score %f but found score %f" %(best_score, actual_score))
         
         if self.has_intercept:
             params, residues, rank, s = linalg.lstsq(np.hstack((best_features, np.ones((num_samples,1)))), self.grades)
