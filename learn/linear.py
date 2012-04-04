@@ -24,27 +24,41 @@ class LinearRegression(object):
             print "Training linear model with %d features on %d essays" %(num_features, num_samples)
             
         correlations = self.get_feature_grade_correlations(self.features, self.grades)
-        self.variable_order = sorted(enumerate(correlations), key=lambda tup: -tup[1])
+        self.variable_order = [tup[0] for tup in sorted(enumerate(correlations), key=lambda tup: -tup[1])]
         
         
         # # Do feature selection
         # best_ind = 0
-        # features = np.transpose(np.array((self.features[:,self.variable_order[0][0]],)))
+        # features = np.transpose(np.array((self.features[:,self.variable_order[0]],)))
+        # best_features = features 
         # best_score = self.get_bic_score(features, self.grades)
-        # for feat_ind in range(1, num_features):
-        #     features = np.hstack((features, np.transpose(np.array((self.features[:,self.variable_order[feat_ind][0]],)))))
-        #     score = self.get_bic_score(features, self.grades)
+        # remaining_features = set(self.variable_order[1:])
+        # used_features = [self.variable_order[0]]
+        # self.used_features = list(used_features)
+        # while len(remaining_features) > 0:
+        #     best_iter_score = float("inf")
+        #     for feat_ind in remaining_features:
+        #         iter_features = np.hstack((features, np.transpose(np.array((self.features[:,feat_ind],)))))
+        #         score = self.get_bic_score(iter_features, self.grades)
+        #         if self.debug:
+        #             print "Iter %d: Model with feature %d achieved BIC score %f" %(len(used_features), feat_ind, score)
+        #         if score < best_iter_score:
+        #             best_iter_score = score
+        #             best_iter_ind = feat_ind
+        #     features = np.hstack((features, np.transpose(np.array((self.features[:,best_iter_ind],)))))
+        #     remaining_features.remove(best_iter_ind)
+        #     used_features.append(best_iter_ind)
         #     if self.debug:
-        #         print "Model with %d features achieved BIC score %f" %(feat_ind+1, score)
-        #     if score < best_score:
-        #         best_score = score
-        #         best_ind = feat_ind
+        #         print "Best model with %d features achieves BIC score %f: %s" %(len(used_features), best_iter_score, str(used_features))
+        #     if best_iter_score < best_score:
+        #         best_score = best_iter_score
+        #         self.used_features = list(used_features)
         # if self.debug:
-        #     print "Best model with %d features achieved BIC score %f" %(best_ind+1, best_score)
-        # self.used_features = sorted([tup[0] for tup in self.variable_order[:best_ind+1]])
+        #     print "Best model with %d features achieved BIC score %f" %(len(self.used_features), best_score)
+        # # self.used_features = sorted(self.variable_order[:best_ind+1])
         self.used_features = range(num_features)
-        
         best_features = self.get_feature_subset(self.features, self.used_features)    
+        
         if self.debug:
             actual_score = self.get_bic_score(best_features, self.grades)
             np.testing.assert_approx_equal(best_score, actual_score, err_msg="Expected score %f but found score %f" %(best_score, actual_score))
@@ -70,9 +84,9 @@ class LinearRegression(object):
         
     def get_best_n_features(self, features, n):
         """Return a sub-matrix of the top n columns/features, as specified by the variable_order."""
-        best_features = np.transpose(np.array((features[:,self.variable_order[0][0]],)))
+        best_features = np.transpose(np.array((features[:,self.variable_order[0]],)))
         for feat_ind in range(1, n):
-            best_features = np.hstack((best_features, np.transpose(np.array((features[:,self.variable_order[feat_ind][0]],)))))
+            best_features = np.hstack((best_features, np.transpose(np.array((features[:,self.variable_order[feat_ind]],)))))
         return best_features
         
     def get_feature_subset(self, features, feat_inds):
@@ -90,7 +104,7 @@ class LinearRegression(object):
         if (denominator == 0).any():
             print "WARNING: there is at least one constant feature"
             # import pdb;pdb.set_trace()
-        return np.abs(covs / denominator)
+        return np.abs(covs / (denominator+1e-8))
         
     def get_bic_score(self, features, grades):
         """Compute and return the BIC score for the specified features on the specified grades.

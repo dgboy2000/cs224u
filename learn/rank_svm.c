@@ -6,10 +6,10 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-#define ETA 0.000002
-#define C 50.0
+#define ETA 0.000008
+#define C 100.0
 #define EPSILON 0.000001
-#define MAX_ITERS 200
+#define MAX_ITERS 600
 #define MAX_STEP_SIZE 20
 
 // a * b
@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
   scores = (double *)malloc(num_samples * sizeof(double));
   grades = (int *)malloc(num_samples * sizeof(int));
   num_updates = 0;
-  step_size = 0.0000003;
+  step_size = ETA;
   
   for (sample_ind=0; sample_ind < num_samples; ++sample_ind) {
     fgets(line, 1024, fp);
