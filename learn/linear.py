@@ -18,6 +18,8 @@ class LinearRegression(object):
         
         self.features = np.array(features)
         self.grades = np.array(grades)
+        self.min_grade = min(grades)
+        self.max_grade = max(grades)
         num_samples, num_features = self.features.shape
         
         if self.debug:
@@ -127,20 +129,22 @@ class LinearRegression(object):
                 
         return num_essays * log(sq_error / num_essays) + len(params) * log(num_essays)
 
-    def grade(self, features, options={}):
-        """Return an integer grade for each feature vector in the specified array"""
+    def _grade(self, feature_vec, options):
+        """Return an integer grade for the specified feature vector."""
         if "round" in options and options["round"]:
-            min_grade = min(self.grades)
-            max_grade = max(self.grades)
-            return [self.grade_by_rounding(features[i, :], min_grade, max_grade) for i in range(features.shape[0])]
-        return [self.curve.curve(self.predict(features[i, :])) for i in range(features.shape[0])]
+            return self.grade_by_rounding(feature_vec, self.min_grade, self.max_grade)
+        return self.curve.curve(self.predict(feature_vec))
+        
+    def grade(self, features, options={}):
+        """Return integer grades for each feature vector in the specified array."""
+        return [self._grade(features[i, :], options) for i in range(features.shape[0])]
             
     def predict(self, x):
         """Predict y_hat given x"""
         assert len(self.params) > 0
         if self.used_features is not None:
             x = [x[i] for i in self.used_features]
-        y_hat = np.dot(self.params, x)
+        y_hat = np.vdot(self.params, x)
         if self.has_intercept:
             y_hat += self.intercept
         return y_hat
