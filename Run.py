@@ -163,8 +163,8 @@ class Run:
 
     def learn(self):
         self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
-        if self.ds_train.getEssaySet() != 8:
-            self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
+        # if self.ds_train.getEssaySet() != 8:
+            # self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
         return
 
     def _predict(self, feat_mat, model):
@@ -175,8 +175,8 @@ class Run:
         return model.grade(feat_mat, {'round': round})
     
     def _predict_refine(self, raw_grades, feat_mat, model):
-        # TODO: use granular models to predict grades
-        refined_grades = raw_grades
+        return raw_grades
+        refined_grades = [self.granular_models[grade].grade(feat_mat[ind, :], {'round': False}) for ind, grade in enumerate(raw_grades)]
         return refined_grades
 
     def predict(self):
@@ -189,10 +189,7 @@ class Run:
         return
 
     def _eval_ds(self, ds, pgrades):
-        try:
-            kappa = KappaScore(ds.getGrades(), pgrades)
-        except:
-            import pdb;pdb.set_trace()
+        kappa = KappaScore(ds.getGrades(), pgrades)
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
         """ TODO Later:

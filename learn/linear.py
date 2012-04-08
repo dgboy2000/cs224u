@@ -11,6 +11,74 @@ class LinearRegression(object):
         self.debug = debug
         self.has_intercept = intercept
         self.used_features = None
+        
+    def _select_features_inclusive(self):
+        """Greedily add features to select the optimal subset."""
+        best_ind = 0
+        features = np.transpose(np.array((self.features[:,self.variable_order[0]],)))
+        best_score = self.get_bic_score(features, self.grades)
+        remaining_features = set(self.variable_order[1:])
+        used_features = [self.variable_order[0]]
+        while len(remaining_features) > 0:
+            best_iter_score = float("inf")
+            for feat_ind in remaining_features:
+                iter_features = np.hstack((features, np.transpose(np.array((self.features[:,feat_ind],)))))
+                score = self.get_bic_score(iter_features, self.grades)
+                # if self.debug:
+                    # print "Iter %d: Model with feature %d achieved BIC score %f" %(len(used_features), feat_ind, score)
+                if score < best_iter_score:
+                    best_iter_score = score
+                    best_iter_ind = feat_ind
+            features = np.hstack((features, np.transpose(np.array((self.features[:,best_iter_ind],)))))
+            remaining_features.remove(best_iter_ind)
+            used_features.append(best_iter_ind)
+            if self.debug:
+                print "Best model with %d features achieves BIC score %f: %s" %(len(used_features), best_iter_score, str(used_features))
+            if best_iter_score < best_score:
+                best_score = best_iter_score
+                self.used_features = list(used_features)
+        if self.debug:
+            print "Best model with %d features achieved BIC score %f" %(len(self.used_features), best_score)
+        self.used_features = sorted(self.variable_order[:best_ind+1])
+        
+    def _select_features_exclusive(self):
+        """Greedily remove features to select the optimal subset."""
+        best_ind = 0
+        features = self.features.copy()
+        best_score = self.get_bic_score(features, self.grades)
+        remaining_features = set(self.variable_order)
+        used_features = list(self.variable_order)
+        while len(feaures) > 0:
+            best_iter_score = float("inf")
+            for feat_ind in remaining_features:
+                iter_features = np.hstack((features, np.transpose(np.array((self.features[:,feat_ind],)))))
+                score = self.get_bic_score(iter_features, self.grades)
+                if self.debug:
+                    print "Iter %d: Model with feature %d achieved BIC score %f" %(len(used_features), feat_ind, score)
+                if score < best_iter_score:
+                    best_iter_score = score
+                    best_iter_ind = feat_ind
+            features = np.hstack((features, np.transpose(np.array((self.features[:,best_iter_ind],)))))
+            remaining_features.remove(best_iter_ind)
+            used_features.append(best_iter_ind)
+            if self.debug:
+                print "Best model with %d features achieves BIC score %f: %s" %(len(used_features), best_iter_score, str(used_features))
+            if best_iter_score < best_score:
+                best_score = best_iter_score
+                self.used_features = list(used_features)
+        if self.debug:
+            print "Best model with %d features achieved BIC score %f" %(len(self.used_features), best_score)
+        self.used_features = sorted(self.variable_order[:best_ind+1])
+
+    def select_features(self):
+        """Do feature selection and save the list of optimal features."""
+        num_samples, num_features = self.features.shape
+        self.used_features = range(num_features)
+        # correlations = self.get_feature_grade_correlations(self.features, self.grades)
+        # self.variable_order = [tup[0] for tup in sorted(enumerate(correlations), key=lambda tup: -tup[1])]
+        # 
+        # self._select_features_inclusive()
+        
 
     def train(self, features, grades):
         """Solve the linear regression and save the parameters. Set the curve to get the right
@@ -25,40 +93,7 @@ class LinearRegression(object):
         if self.debug:
             print "Training linear model with %d features on %d essays" %(num_features, num_samples)
             
-        correlations = self.get_feature_grade_correlations(self.features, self.grades)
-        self.variable_order = [tup[0] for tup in sorted(enumerate(correlations), key=lambda tup: -tup[1])]
-        
-        
-        # # Do feature selection
-        # best_ind = 0
-        # features = np.transpose(np.array((self.features[:,self.variable_order[0]],)))
-        # best_features = features 
-        # best_score = self.get_bic_score(features, self.grades)
-        # remaining_features = set(self.variable_order[1:])
-        # used_features = [self.variable_order[0]]
-        # self.used_features = list(used_features)
-        # while len(remaining_features) > 0:
-        #     best_iter_score = float("inf")
-        #     for feat_ind in remaining_features:
-        #         iter_features = np.hstack((features, np.transpose(np.array((self.features[:,feat_ind],)))))
-        #         score = self.get_bic_score(iter_features, self.grades)
-        #         if self.debug:
-        #             print "Iter %d: Model with feature %d achieved BIC score %f" %(len(used_features), feat_ind, score)
-        #         if score < best_iter_score:
-        #             best_iter_score = score
-        #             best_iter_ind = feat_ind
-        #     features = np.hstack((features, np.transpose(np.array((self.features[:,best_iter_ind],)))))
-        #     remaining_features.remove(best_iter_ind)
-        #     used_features.append(best_iter_ind)
-        #     if self.debug:
-        #         print "Best model with %d features achieves BIC score %f: %s" %(len(used_features), best_iter_score, str(used_features))
-        #     if best_iter_score < best_score:
-        #         best_score = best_iter_score
-        #         self.used_features = list(used_features)
-        # if self.debug:
-        #     print "Best model with %d features achieved BIC score %f" %(len(self.used_features), best_score)
-        # # self.used_features = sorted(self.variable_order[:best_ind+1])
-        self.used_features = range(num_features)
+        self.select_features()
         best_features = self.get_feature_subset(self.features, self.used_features)    
         
         # if self.debug:
@@ -137,7 +172,11 @@ class LinearRegression(object):
         
     def grade(self, features, options={}):
         """Return integer grades for each feature vector in the specified array."""
-        return [self._grade(features[i, :], options) for i in range(features.shape[0])]
+        if len(features.shape) == 2:
+            return [self._grade(features[i, :], options) for i in range(features.shape[0])]
+        elif len(features.shape) == 1:
+            return self._grade(features, options)
+        raise TypeError("Features had bad shape: %s" %tr(features.shape))
             
     def predict(self, x):
         """Predict y_hat given x"""
