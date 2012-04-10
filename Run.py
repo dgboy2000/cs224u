@@ -163,8 +163,8 @@ class Run:
 
     def learn(self):
         self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
-        # if self.ds_train.getEssaySet() != 8:
-            # self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
+        if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
+            self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
         return
 
     def _predict(self, feat_mat, model):
@@ -175,7 +175,6 @@ class Run:
         return model.grade(feat_mat, {'round': round})
     
     def _predict_refine(self, raw_grades, feat_mat, model):
-        return raw_grades
         refined_grades = [self.granular_models[grade].grade(feat_mat[ind, :], {'round': False}) for ind, grade in enumerate(raw_grades)]
         return refined_grades
 
@@ -183,7 +182,7 @@ class Run:
         self.train_pgrades = self._predict(self.train_feat_mat, self.model)
         self.test_pgrades = self._predict(self.test_feat_mat, self.model)
         
-        if self.ds_train.getEssaySet() != 8:
+        if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
             self.train_pgrades = self._predict_refine(self.train_pgrades, self.train_feat_mat, self.model)
             self.test_pgrades = self._predict_refine(self.test_pgrades, self.test_feat_mat, self.model)
         return

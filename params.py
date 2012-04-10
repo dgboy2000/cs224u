@@ -1,6 +1,8 @@
 DEBUG = True
 ESSAY_SETS = range(1, 9)
 
+GRANULAR_MODELS = True
+
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
 # TOTAL_WORD_UNIGRAMS = 25
 #(deprecated)TOTAL_POS_UNIGRAMS = 10
