@@ -1,7 +1,9 @@
-DEBUG = True
+DEBUG = False
 ESSAY_SETS = range(1, 9)
 
-GRANULAR_MODELS = False
+# Learning parameters
+GRANULAR_MODELS = True
+FEATURE_SELECTION = 'exclusive'  # None | 'inclusive' | 'exclusive'
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
 # TOTAL_WORD_UNIGRAMS = 25

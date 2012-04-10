@@ -16,11 +16,11 @@ class LinearRegression(object):
         """Greedily add features to select the optimal subset."""
         num_samples, num_features = self.features.shape
         
-        features = np.transpose(np.array((self.features[:,self.variable_order[0]],)))
+        features = np.ones((num_samples, 0))
         best_ind = 0
-        best_score = self.get_bic_score(features, self.grades)
-        remaining_features = set(self.variable_order[1:])
-        self.used_features = used_features = [self.variable_order[0]]
+        best_score = float("inf")
+        remaining_features = set(range(num_features))
+        self.used_features = used_features = []
         while len(remaining_features) > 0 and len(self.used_features) + (1 if self.has_intercept else 0) < num_samples:
             best_iter_score = float("inf")
             for feat_ind in remaining_features:
@@ -70,18 +70,20 @@ class LinearRegression(object):
         if self.debug:
             print "Best model has %d features and achieves BIC score %f" %(len(self.used_features), best_score)
 
-    def select_features(self):
+    def select_features(self, options):
         """Do feature selection and save the list of optimal features."""
-        # num_samples, num_features = self.features.shape
-        # self.used_features = range(num_features)
+        # correlations = self.get_feature_grade_correlations(self.features, self.grades)
+        # self.variable_order = [tup[0] for tup in sorted(enumerate(correlations), key=lambda tup: -tup[1])]
         
-        correlations = self.get_feature_grade_correlations(self.features, self.grades)
-        self.variable_order = [tup[0] for tup in sorted(enumerate(correlations), key=lambda tup: -tup[1])]
-        
-        # self._select_features_inclusive()
-        self._select_features_exclusive()
+        if options['feature_selection'] == 'inclusive':
+            self._select_features_inclusive()
+        elif options['feature_selection'] == 'exclusive':
+            self._select_features_exclusive()
+        else:
+            print "WARNING: no feature selection, using all features"
+            self.used_features = range(num_features)
 
-    def train(self, features, grades):
+    def train(self, features, grades, options={}):
         """Solve the linear regression and save the parameters. Set the curve to get the right
         grade distribution on the training data."""
         
@@ -94,12 +96,8 @@ class LinearRegression(object):
         if self.debug:
             print "Training linear model with %d features on %d essays" %(num_features, num_samples)
             
-        self.select_features()
+        self.select_features(options)
         best_features = self.get_feature_subset(self.features, self.used_features)    
-        
-        # if self.debug:
-        #     actual_score = self.get_bic_score(best_features, self.grades)
-        #     np.testing.assert_approx_equal(best_score, actual_score, err_msg="Expected score %f but found score %f" %(best_score, actual_score))
         
         if self.has_intercept:
             params, residues, rank, s = linalg.lstsq(np.hstack((best_features, np.ones((num_samples,1)))), self.grades)
@@ -120,12 +118,12 @@ class LinearRegression(object):
 
         self.set_curve(scores, grade_counts)
         
-    def get_best_n_features(self, features, n):
-        """Return a sub-matrix of the top n columns/features, as specified by the variable_order."""
-        best_features = np.transpose(np.array((features[:,self.variable_order[0]],)))
-        for feat_ind in range(1, n):
-            best_features = np.hstack((best_features, np.transpose(np.array((features[:,self.variable_order[feat_ind]],)))))
-        return best_features
+    # def get_best_n_features(self, features, n):
+    #     """Return a sub-matrix of the top n columns/features, as specified by the variable_order."""
+    #     best_features = np.transpose(np.array((features[:,self.variable_order[0]],)))
+    #     for feat_ind in range(1, n):
+    #         best_features = np.hstack((best_features, np.transpose(np.array((features[:,self.variable_order[feat_ind]],)))))
+    #     return best_features
         
     def get_feature_subset(self, features, feat_inds):
         """Return a sub-matrix of the specified columns/features."""
