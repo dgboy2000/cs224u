@@ -81,7 +81,7 @@ class LinearRegression(object):
             self._select_features_exclusive()
         else:
             print "WARNING: no feature selection, using all features"
-            self.used_features = range(num_features)
+            self.used_features = range(self.features.shape[1])
 
     def train(self, features, grades, options={}):
         """Solve the linear regression and save the parameters. Set the curve to get the right
@@ -161,7 +161,9 @@ class LinearRegression(object):
             else:
                 sq_error = sq_error + (np.dot(params, features[essay_ind, :]) - grades[essay_ind]) ** 2
                 
-        return num_essays * log(sq_error / num_essays) + len(params) * log(num_essays)
+        return num_essays * log(sq_error / num_essays) + len(params) * log(num_essays) # BIC score
+        # return num_essays * log(sq_error / num_essays) + 2 * len(params) # AIC score
+
 
     def _grade(self, feature_vec, options):
         """Return an integer grade for the specified feature vector."""

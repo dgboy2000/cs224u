@@ -2,8 +2,9 @@ DEBUG = False
 ESSAY_SETS = range(1, 9)
 
 # Learning parameters
-GRANULAR_MODELS = True
+GRANULAR_MODELS = False
 FEATURE_SELECTION = 'exclusive'  # None | 'inclusive' | 'exclusive'
+DUMP = False # True | False  Dump features and grades to file and quit
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
 # TOTAL_WORD_UNIGRAMS = 25

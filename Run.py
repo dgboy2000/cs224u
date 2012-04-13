@@ -214,3 +214,57 @@ class Run:
     def outputKaggle(self, fd):
         self.ds_test.outputKaggle(self.test_pgrades, fd)
         return
+        
+    def _dump_feat_mat(self, filename, features):
+        """Dump the specified feature matrix to human-readable file."""
+        f = open(filename, 'w')
+        num_essays, num_features = features.shape
+        for essay_ind in range(num_essays):
+            for feat_ind in range(num_features):
+                f.write("%f " %features[essay_ind, feat_ind])
+            f.write("\n")
+        f.close()
+        
+    def _dump_grades(self, filename, grades):
+        """Dump the specified feature matrix to human-readable file."""
+        f = open(filename, 'w')
+        for grade in grades:
+            f.write("%d\n" %grade)
+        f.close()
+        
+    def dump(self):
+        """Dump the essays and grades to human-readable file."""
+        self._dump_feat_mat("features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
+        self._dump_feat_mat("features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
+
+        self._dump_grades("grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
+        self._dump_grades("grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

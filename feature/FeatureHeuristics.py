@@ -9,10 +9,15 @@ class FeatureHeuristics(object):
     
     word_splitter = re.compile("\\s+")
     sentence_splitter = nltk.PunktSentenceTokenizer()
+    entity_types = ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT"]
 
     def __init__(self):
         self.features = np.array(())
         self.type = 'real'
+        
+    def countEntitiesOfType(self, type, line):
+        """Return the number of entities of the specified type in the given line."""
+        return line.count("@%s" %type.upper())
 
     def numFeatures(self):
         """Return the number of features for this feature vector"""
@@ -68,6 +73,13 @@ class FeatureHeuristics(object):
             #curfeat.append(len(capwords))
             curfeat.append(words.count('I'))
             curfeat.append(words.count('i'))
+            
+            # Types of entities in the essays
+            for entity_type in self.entity_types:
+                curfeat.append(self.countEntitiesOfType(entity_type, line))    
+            curfeat.append(line.count('@'))
+            
+            
             #print curfeat
 
             lenfeats.append(curfeat)
