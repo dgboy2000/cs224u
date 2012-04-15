@@ -192,11 +192,15 @@ class Run:
         kappa = KappaScore(ds.getGrades(), pgrades)
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
-        ds_str = 'test'
+        ds_str = ''
         if ds.isTrainSet():
             ds_str = 'train'
+            feat_mat = self.train_feat_mat
+        else:
+            ds_str = 'test'
+            feat_mat = self.test_feat_mat
 
-        real_pgrades = [self.model.predict(x) for x in self.test_feat_mat]
+        real_pgrades = [self.model.predict(x) for x in feat_mat]
 
         i = 0
         lines = ds.getRawText()
