@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 ESSAY_SETS = range(1, 9)
 
 # Learning parameters
