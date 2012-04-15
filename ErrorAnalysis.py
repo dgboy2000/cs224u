@@ -88,11 +88,13 @@ class ErrorAnalysis:
         ax = fig.add_subplot(111)
         ax.scatter(self.datamap['gt_grade'], errors, marker='o', alpha = 0.25)
         plt.savefig('output/scatter_errors_by_grade.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
-"""  
+  
     def score_errors_by_grade(self, bins=10):
-        #grades = self.datamap['gt_grade']
-        #for grade in grades:
-        #    errors = np.asarray([self.datamap['pred_score'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])])
+        grades = self.datamap['gt_grade']
+        min_grade = min(grades)
+        max_grade = max(grades)
+        for grade in grades:
+            errors = np.asarray([self.datamap['pred_score'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])])
         mu = np.mean(errors)
         var = np.var(errors)
         sd = np.sqrt(var)
@@ -107,8 +109,7 @@ class ErrorAnalysis:
 
         plt.savefig('output/all_score_errors_by_count.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set
         else "train"), format='png')
-"""
-            
+         
 
 #ea = ErrorAnalysis(1, 1, test=True)
 #ea.all_grade_errors_by_count(bins=20)
@@ -117,7 +118,7 @@ class ErrorAnalysis:
 for i in range(1,9):
     ea = ErrorAnalysis(i, 1, test=True) 
     #ea.scatter_errors_by_grade()
-    ea.score_errors_by_grade(self, bins=30)
+    ea.score_errors_by_grade(bins=30)
     if i == 2:
         ea = ErrorAnalysis(i, 2, test=True)
         ea.scatter_errors_by_grade()
