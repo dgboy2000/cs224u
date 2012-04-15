@@ -63,11 +63,11 @@ class Run:
     def _extract_ds(self, ds):
         all_feats = list()
         all_feats.append(self._extract_feat(ds, FeatureHeuristics.FeatureHeuristics()))
-        #all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
-        #all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
-        #all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
+        all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
+        all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
+        all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
         #all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
-        #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
 
