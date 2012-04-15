@@ -139,7 +139,7 @@ class Run:
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
 
-        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_test.getDomain())
+        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION})
 
         return learner
         
@@ -155,7 +155,7 @@ class Run:
             cur_grades = [grades[ind] for ind in inds_within_one_grade]
             
             learner = LinearRegression(intercept = True, debug = params.DEBUG)
-            learner.train(cur_feat_mat, cur_grades, {'feature_selection': 'inclusive'})
+            learner.train(cur_feat_mat, cur_grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': 'inclusive'})
             grade_to_model[cur_center_grade] = learner
             
             cur_center_grade += 1

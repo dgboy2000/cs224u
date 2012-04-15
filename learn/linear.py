@@ -83,7 +83,7 @@ class LinearRegression(object):
             print "WARNING: no feature selection, using all features"
             self.used_features = range(self.features.shape[1])
 
-    def train(self, features, grades, options={}):
+    def train(self, features, grades, essay_set, domain, options={}):
         """Solve the linear regression and save the parameters. Set the curve to get the right
         grade distribution on the training data."""
         
@@ -179,7 +179,7 @@ class LinearRegression(object):
             return self._grade(features, options)
         raise TypeError("Features had bad shape: %s" %tr(features.shape))
             
-    def predict(self, x, essay_set, domain):
+    def predict(self, x):
         """Predict y_hat given x"""
         assert len(self.params) > 0
         if self.used_features is not None:
