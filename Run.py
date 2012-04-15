@@ -1,6 +1,6 @@
 import DataSet, Corpus
 from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
-from learn import LinearRegression #, OrLogit, SVM
+from learn import LinearRegression, MatlabExample #, OrLogit, SVM
 import math
 import os
 import cPickle as pickle
@@ -136,8 +136,11 @@ class Run:
         learner = LinearRegression(intercept = True, debug = params.DEBUG)
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
-        
         learner.train(feat_mat, grades, {'feature_selection': params.FEATURE_SELECTION})
+
+        #learner = MatlabExample()
+        #learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_test.getDomain())
+
         return learner
         
     def _learn_granular(self, feat_mat, grades):
@@ -175,6 +178,7 @@ class Run:
         if self.ds_train.getEssaySet() == 8:
             round = True
 
+        #return model.grade(feat_mat, self.ds_train.getEssaySet(), self.ds_test.getDomain())
         return model.grade(feat_mat, {'round': round})
     
     def _predict_refine(self, raw_grades, feat_mat, model):
