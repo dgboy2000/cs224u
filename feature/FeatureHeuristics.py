@@ -76,8 +76,10 @@ class FeatureHeuristics(object):
             
             # Types of entities in the essays
             for entity_type in self.entity_types:
-                curfeat.append(self.countEntitiesOfType(entity_type, line))    
-            curfeat.append(line.count('@'))
+                # curfeat.append(self.countEntitiesOfType(entity_type, line))    
+                # curfeat.append(1 if self.countEntitiesOfType(entity_type, line) > 0 else 0)    
+                pass
+            curfeat.append(1 if line.count('@') > 0 else 0)
             
             
             #print curfeat
