@@ -1,12 +1,14 @@
 from LearnerBase import LearnerBase
 import numpy as np
+import os
 
 class MatlabExample(object):
 
     def train(self, features, grades, essay_set, domain):
         """Train the learner on the specified features and grades."""
-
-        os.system('echo ""prefix=output/features.set%d.dom%d;prefix2=output/ds.set%d.dom%d"" | matlab -nodesktop' % (essay_set, domain, essay_set, domain))
+        cmd = 'echo "prefix=\'output/features.set%d.dom%d\';prefix2=\'output/ds.set%d.dom%d\';addpath(genpath(\'matlab\'));trainTestEssayPipe" | matlab -nodesktop' % (essay_set, domain, essay_set, domain)
+        print cmd
+        os.system(cmd)
 
         return
 
