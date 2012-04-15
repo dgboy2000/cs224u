@@ -1,6 +1,6 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
-from learn import LinearRegression, OrLogit #, SVM
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
+from learn import LinearRegression #, OrLogit, SVM
 import math
 import os
 import cPickle as pickle
@@ -192,17 +192,19 @@ class Run:
         kappa = KappaScore(ds.getGrades(), pgrades)
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
-        """ TODO Later:
         if not ds.isTrainSet():
+            real_pgrades = [self.model.predict(x) for x in self.test_feat_mat]
+
             i = 0
             lines = ds.getRawText()
-            f = open('output/val.set%d.domain%d.tsv' % (ds.getEssaySet(), ds.getDomain()), 'w')
-            for grade in grades:
-                pgrade = predicted_grades[i]
+            f = open('output/diffs.set%d.domain%d.test' % (ds.getEssaySet(), ds.getDomain()), 'w')
+            f.write('#real_diff\tresolved_diff\tgt_grade\tpred_score\tpred_grade\tessay\n')
+            for grade in ds.getGrades():
+                pgrade = pgrades[i]
+                real_pgrade = real_pgrades[i]
                 line = lines[i]
-                f.write('%d\t%d\t%d\t%s\n' % (math.fabs(pgrade-grade), grade, pgrade, line))
+                f.write('%f\t%d\t%d\t%f\t%d\t%s\n' % (math.fabs(real_pgrade-float(grade)), math.fabs(pgrade-grade), grade, real_pgrade, pgrade, line))
                 i+=1
-        """
 
         return kappa
 
@@ -222,7 +224,7 @@ class Run:
         num_essays, num_features = features.shape
         for essay_ind in range(num_essays):
             for feat_ind in range(num_features):
-                f.write("%f " %features[essay_ind, feat_ind])
+                f.write("%f\t" %features[essay_ind, feat_ind])
             f.write("\n")
         f.close()
         
@@ -235,11 +237,11 @@ class Run:
         
     def dump(self):
         """Dump the essays and grades to human-readable file."""
-        self._dump_feat_mat("features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
-        self._dump_feat_mat("features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
+        self._dump_feat_mat("output/features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
+        self._dump_feat_mat("output/features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
 
-        self._dump_grades("grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
-        self._dump_grades("grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
+        self._dump_grades("output/grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
+        self._dump_grades("output/grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
 
 
 

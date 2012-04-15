@@ -19,5 +19,5 @@ from prepare_data import *
 #import libsvm
 #from libsvm import *
 
-import orlogit
-from orlogit import *
+#import orlogit
+#from orlogit import *

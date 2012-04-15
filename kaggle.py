@@ -23,19 +23,15 @@ if RUN_VAL:
             run = Run.Run()
             run.setup('data/c_train.utf8ignore.tsv', 'data/c_val.utf8ignore.tsv', essay_set, domain)
             run.extract()
-            if params.DUMP:
-                run.dump()
-                continue
             run.learn()
             run.predict()
             train_score, test_score = run.eval()
+            run.dump()
 
             train_mean_kappa.add(train_score)
             val_mean_kappa.add(test_score)
             print "--\n"
 
-    if params.DUMP:
-        sys.exit()
     print "Overall Train / Test"
     print "Kappa Score %f" %train_mean_kappa.mean_quadratic_weighted_kappa()
     print "Kappa Score %f" %val_mean_kappa.mean_quadratic_weighted_kappa()
