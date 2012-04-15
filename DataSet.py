@@ -64,8 +64,8 @@ class DataSet:
         self.domain_id = domain_id
         self.essay_set = essay_set
 
-        rowmap = dict() # key = row num, value = col_id
-        datamap = dict() # key = col_id, value = data
+        rowmap = dict() # key = col index, value = col_header_name
+        datamap = dict() # key = col_header_name, value = list of data
         for row in reader:
             if first:
                 i = 0
