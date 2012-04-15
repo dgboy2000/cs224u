@@ -137,11 +137,35 @@ class Run:
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
         
-        learner.train(feat_mat, grades)
+        learner.train(feat_mat, grades, {'feature_selection': params.FEATURE_SELECTION})
         return learner
+        
+    def _learn_granular(self, feat_mat, grades):
+        min_grade = min(grades)
+        max_grade = max(grades)
+
+        grade_to_model = {}
+        cur_center_grade = min_grade + 1
+        while cur_center_grade < max_grade:            
+            inds_within_one_grade = [ind for ind,grade in enumerate(grades) if abs(grade-cur_center_grade) < 1.1]
+            cur_feat_mat = np.vstack([feat_mat[ind, :] for ind in inds_within_one_grade])
+            cur_grades = [grades[ind] for ind in inds_within_one_grade]
+            
+            learner = LinearRegression(intercept = True, debug = params.DEBUG)
+            learner.train(cur_feat_mat, cur_grades, {'feature_selection': 'inclusive'})
+            grade_to_model[cur_center_grade] = learner
+            
+            cur_center_grade += 1
+        
+        grade_to_model[min_grade] = grade_to_model[min_grade+1]
+        grade_to_model[max_grade] = grade_to_model[max_grade-1]
+        
+        return grade_to_model
 
     def learn(self):
         self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
+        if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
+            self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
         return
 
     def _predict(self, feat_mat, model):
@@ -150,17 +174,22 @@ class Run:
             round = True
 
         return model.grade(feat_mat, {'round': round})
+    
+    def _predict_refine(self, raw_grades, feat_mat, model):
+        refined_grades = [self.granular_models[grade].grade(feat_mat[ind, :], {'round': False}) for ind, grade in enumerate(raw_grades)]
+        return refined_grades
 
     def predict(self):
         self.train_pgrades = self._predict(self.train_feat_mat, self.model)
         self.test_pgrades = self._predict(self.test_feat_mat, self.model)
+        
+        if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
+            self.train_pgrades = self._predict_refine(self.train_pgrades, self.train_feat_mat, self.model)
+            self.test_pgrades = self._predict_refine(self.test_pgrades, self.test_feat_mat, self.model)
         return
 
     def _eval_ds(self, ds, pgrades):
-        try:
-            kappa = KappaScore(ds.getGrades(), pgrades)
-        except:
-            import pdb;pdb.set_trace()
+        kappa = KappaScore(ds.getGrades(), pgrades)
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
         """ TODO Later:
@@ -186,3 +215,57 @@ class Run:
     def outputKaggle(self, fd):
         self.ds_test.outputKaggle(self.test_pgrades, fd)
         return
+        
+    def _dump_feat_mat(self, filename, features):
+        """Dump the specified feature matrix to human-readable file."""
+        f = open(filename, 'w')
+        num_essays, num_features = features.shape
+        for essay_ind in range(num_essays):
+            for feat_ind in range(num_features):
+                f.write("%f " %features[essay_ind, feat_ind])
+            f.write("\n")
+        f.close()
+        
+    def _dump_grades(self, filename, grades):
+        """Dump the specified feature matrix to human-readable file."""
+        f = open(filename, 'w')
+        for grade in grades:
+            f.write("%d\n" %grade)
+        f.close()
+        
+    def dump(self):
+        """Dump the essays and grades to human-readable file."""
+        self._dump_feat_mat("features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
+        self._dump_feat_mat("features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
+
+        self._dump_grades("grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
+        self._dump_grades("grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
