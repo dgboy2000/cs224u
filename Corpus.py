@@ -200,3 +200,9 @@ class Corpus:
 
     def getPOS_Tfidf(self):
         return self.pos_tfidf
+
+    def getTrain(self):
+        return self.ds1
+
+    def getTest(self):
+        return self.ds2
