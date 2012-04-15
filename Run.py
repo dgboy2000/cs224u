@@ -192,11 +192,13 @@ class Run:
         kappa = KappaScore(ds.getGrades(), pgrades)
         print "Kappa Score %f" %kappa.quadratic_weighted_kappa()
 
+        real_pgrades = []
         ds_str = 'test'
         if ds.isTrainSet():
             ds_str = 'train'
-
-        real_pgrades = [self.model.predict(x) for x in self.test_feat_mat]
+            real_pgrades = [self.model.predict(x) for x in self.train_feat_mat]
+        else:
+            real_pgrades = [self.model.predict(x) for x in self.test_feat_mat]
 
         i = 0
         lines = ds.getRawText()
@@ -204,7 +206,10 @@ class Run:
         f.write('#real_diff\tresolved_diff\tgt_grade\tpred_score\tpred_grade\tessay\n')
         for grade in ds.getGrades():
             pgrade = pgrades[i]
-            real_pgrade = real_pgrades[i]
+            try:
+                real_pgrade = real_pgrades[i]
+            except:
+                import pdb; pdb.set_trace()
             line = lines[i]
             f.write('%f\t%d\t%d\t%f\t%d\t%s\n' % (math.fabs(real_pgrade-float(grade)), math.fabs(pgrade-grade), grade, real_pgrade, pgrade, line))
             i+=1
