@@ -163,6 +163,8 @@ class Run:
         return grade_to_model
 
     def learn(self):
+        self.dump() # Must dump files for external processes (such as matlab)
+
         self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
         if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
             self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
@@ -241,40 +243,25 @@ class Run:
         for grade in grades:
             f.write("%d\n" %grade)
         f.close()
-        
+
+    def _dump_ds(self, filename, ds):
+        i = 0
+        lines = ds.getRawText() 
+        f = open(filename, 'w')
+        f.write('#grade\tessay\n')
+        for grade in ds.getGrades():
+            line = lines[i]
+            f.write('%d\t%s\n' % (grade, line))
+            i+=1
+ 
     def dump(self):
         """Dump the essays and grades to human-readable file."""
-        self._dump_feat_mat("output/features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
-        self._dump_feat_mat("output/features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
+        self._dump_feat_mat("output/features.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.train_feat_mat)
+        self._dump_feat_mat("output/features.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.test_feat_mat)
 
-        self._dump_grades("output/grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
-        self._dump_grades("output/grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
+        self._dump_grades("output/grades.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.ds_train.getGrades())
+        self._dump_grades("output/grades.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.ds_test.getGrades())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self._dump_ds("output/ds.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.ds_train)
+        self._dump_ds("output/ds.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.ds_test)
 
