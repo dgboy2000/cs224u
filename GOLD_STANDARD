@@ -1,48 +1,48 @@
 Train/Test Scores: (ESSAY_SET #1, DOMAIN 1)
-Kappa Score 0.872924
-Kappa Score 0.829889
+Kappa Score 0.866116
+Kappa Score 0.838473
 --
 
 Train/Test Scores: (ESSAY_SET #2, DOMAIN 1)
-Kappa Score 0.770182
-Kappa Score 0.699239
+Kappa Score 0.756253
+Kappa Score 0.699274
 --
 
 Train/Test Scores: (ESSAY_SET #2, DOMAIN 2)
-Kappa Score 0.734196
-Kappa Score 0.691857
+Kappa Score 0.738223
+Kappa Score 0.686292
 --
 
 Train/Test Scores: (ESSAY_SET #3, DOMAIN 1)
-Kappa Score 0.717658
-Kappa Score 0.697543
+Kappa Score 0.698073
+Kappa Score 0.712269
 --
 
 Train/Test Scores: (ESSAY_SET #4, DOMAIN 1)
-Kappa Score 0.832026
-Kappa Score 0.773428
+Kappa Score 0.829644
+Kappa Score 0.780711
 --
 
 Train/Test Scores: (ESSAY_SET #5, DOMAIN 1)
-Kappa Score 0.849251
-Kappa Score 0.814664
+Kappa Score 0.831516
+Kappa Score 0.813827
 --
 
 Train/Test Scores: (ESSAY_SET #6, DOMAIN 1)
-Kappa Score 0.828243
-Kappa Score 0.823714
+Kappa Score 0.815425
+Kappa Score 0.809794
 --
 
 Train/Test Scores: (ESSAY_SET #7, DOMAIN 1)
-Kappa Score 0.799594
-Kappa Score 0.812714
+Kappa Score 0.806354
+Kappa Score 0.813625
 --
 
 Train/Test Scores: (ESSAY_SET #8, DOMAIN 1)
-Kappa Score 0.782739
-Kappa Score 0.685718
+Kappa Score 0.805900
+Kappa Score 0.704160
 --
 
 Overall Train / Test
-Kappa Score 0.803950
-Kappa Score 0.765311
+Kappa Score 0.799282
+Kappa Score 0.768033
