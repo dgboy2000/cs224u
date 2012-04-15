@@ -61,6 +61,9 @@ class ErrorAnalysis:
         fig = plt.figure()        
         ax = fig.add_subplot(111)
         ax.hist(errors, bins)
+        ax.set_title("All %s Grade Errors, Essay Set %d, Domain %d" %("test" if self.is_test_set else "train", self.essay_set, self.grade_domain))
+        ax.set_xlabel("Predicted Grade - Actual Grade")
+        ax.set_ylabel("Number of Occurrences")
         
         plt.savefig('output/all_grade_errors_by_count.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
         
@@ -77,15 +80,56 @@ class ErrorAnalysis:
 
         normal_dist = [len(errors) * (bins[-1]-bins[0]) / (len(bins)-1) * 1/(sd*np.sqrt(2*np.pi)) * np.exp(-(x-mu)**2/(2*var)) for x in bins]
         ax.plot(bins, normal_dist)
+        ax.set_title("All %s Score Errors, Essay Set %d, Domain %d" %("test" if self.is_test_set else "train", self.essay_set, self.grade_domain))
+        ax.set_xlabel("Predicted Score - Actual Grade")
+        ax.set_ylabel("Number of Occurrences")
 
         plt.savefig('output/all_score_errors_by_count.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
             
+    def mean_score_error_by_grade(self):
+        grade_to_errors = {}
+        grade_to_mean_error = {}
+
+        for essay_ind, gt_grade in enumerate(self.datamap['gt_grade']):
+            if gt_grade not in grade_to_errors:
+                grade_to_errors[gt_grade] = []
+            grade_to_errors[gt_grade].append(self.datamap['pred_score'][essay_ind] - gt_grade)
+        left = []
+        height = []
+        for grade, errors in grade_to_errors.iteritems():
+            grade_to_mean_error[grade] = np.mean(np.abs(errors))
+            left.append(grade - 0.5)
+            height.append(np.mean(np.abs(errors)))
+        
+        
+        plt.clf()
+        fig = plt.figure()        
+        ax = fig.add_subplot(111)
+        ax.bar(left, height, width = 1)
+        ax.set_title("Mean %s Score Error by Grade, Essay Set %d, Domain %d" %("test" if self.is_test_set else "train", self.essay_set, self.grade_domain))
+        ax.set_xlabel("Actual Grade")
+        ax.set_ylabel("Mean(Absolute Value of Predicted Score - Actual Grade)")
+        
+        plt.savefig('output/mean_score_error_by_grade.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
+        
             
 
-ea = ErrorAnalysis(1, 1, test=True)
-ea.all_grade_errors_by_count(bins=20)
-ea.all_score_errors_by_count(bins=40)
-
+if __name__ == '__main__':
+    for essay_set in range(1,9):
+        print "Analyzing errors for essay set %d, domain 1..." %essay_set,
+        ea = ErrorAnalysis(essay_set, 1, test=True)
+        ea.all_grade_errors_by_count(bins=20)
+        ea.all_score_errors_by_count(bins=40)
+        ea.mean_score_error_by_grade()
+        print "Done"
+        
+        if essay_set == 2:
+            print "Analyzing errors for essay set %d, domain 2..." %essay_set,
+            ea = ErrorAnalysis(essay_set, 2, test=True)
+            ea.all_grade_errors_by_count(bins=20)
+            ea.all_score_errors_by_count(bins=40)
+            ea.mean_score_error_by_grade()
+            print "Done"
 
 
 
