@@ -135,12 +135,11 @@ class Run:
         
     def _learn(self, feat_mat, grades):
         learner = LinearRegression(intercept = True, debug = params.DEBUG)
+        # learner = MatlabExample()
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
-        learner.train(feat_mat, grades, {'feature_selection': params.FEATURE_SELECTION})
 
-        #learner = MatlabExample()
-        #learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_test.getDomain())
+        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_test.getDomain())
 
         return learner
         
@@ -174,21 +173,20 @@ class Run:
             self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
         return
 
-    def _predict(self, feat_mat, model):
+    def _predict(self, feat_mat, model, postfix):
         round = False
         if self.ds_train.getEssaySet() == 8:
             round = True
 
-        #return model.grade(feat_mat, self.ds_train.getEssaySet(), self.ds_test.getDomain())
-        return model.grade(feat_mat, {'round': round})
+        return model.grade(feat_mat, self.ds_train.getEssaySet(), self.ds_test.getDomain(), {'round': round, 'postfix': postfix})
     
     def _predict_refine(self, raw_grades, feat_mat, model):
         refined_grades = [self.granular_models[grade].grade(feat_mat[ind, :], {'round': False}) for ind, grade in enumerate(raw_grades)]
         return refined_grades
 
     def predict(self):
-        self.train_pgrades = self._predict(self.train_feat_mat, self.model)
-        self.test_pgrades = self._predict(self.test_feat_mat, self.model)
+        self.train_pgrades = self._predict(self.train_feat_mat, self.model, 'train')
+        self.test_pgrades = self._predict(self.test_feat_mat, self.model, 'test')
         
         if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
             self.train_pgrades = self._predict_refine(self.train_pgrades, self.train_feat_mat, self.model)
