@@ -1,6 +1,6 @@
 import DataSet, Corpus
 from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeatureBigram, FeatureUnigram, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
-from learn import LinearRegression, SVM
+from learn import LinearRegression, OrLogit #, SVM
 import math
 import os
 import cPickle as pickle
@@ -63,11 +63,11 @@ class Run:
     def _extract_ds(self, ds):
         all_feats = list()
         all_feats.append(self._extract_feat(ds, FeatureHeuristics.FeatureHeuristics()))
-        all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
-        all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
-        all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
+        #all_feats.append(self._extract_feat(ds, FeatureSpelling.FeatureSpelling()))
+        #all_feats.append(self._extract_feat(ds, FeatureTransitions.FeatureTransitions()))
+        #all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
         #all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
-        all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        #all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
 
@@ -135,6 +135,7 @@ class Run:
     def _learn(self, feat_mat, grades):
         learner = LinearRegression(intercept = True, debug = params.DEBUG)
         # learner = SVM(debug = params.DEBUG)
+        # learner = OrLogit(debug = params.DEBUG)
         
         learner.train(feat_mat, grades)
         return learner
