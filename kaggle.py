@@ -26,7 +26,6 @@ if RUN_VAL:
             run.learn()
             run.predict()
             train_score, test_score = run.eval()
-            run.dump()
 
             train_mean_kappa.add(train_score)
             val_mean_kappa.add(test_score)

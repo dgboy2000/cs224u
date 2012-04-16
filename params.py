@@ -3,7 +3,7 @@ ESSAY_SETS = range(1, 9)
 
 # Learning parameters
 GRANULAR_MODELS = False
-FEATURE_SELECTION = 'exclusive'  # None | 'inclusive' | 'exclusive'
+FEATURE_SELECTION = 'exclusive' # None | 'inclusive' | 'exclusive'
 DUMP = False # True | False  Dump features and grades to file and quit
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
@@ -17,6 +17,9 @@ POS_LSI_TOPICS = 10 # 10
 LSI_POWER_ITERS = 2
 LSI_EXTRA_SAMPLES = 100
 
+# FeatureNN - number of nearest neighbors counted with LSI similarity
+NUM_NN = 25
+
 FEATURE_CACHE = {
     'FeatureHeuristics': True,
     'FeatureSpelling': True,
@@ -26,4 +29,5 @@ FEATURE_CACHE = {
     'FeaturePOS_LSI': True,
     'genLSA': True,
     'FeatureSim': True,
+    'FeatureNN': False,
     }

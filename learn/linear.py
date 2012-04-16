@@ -83,7 +83,7 @@ class LinearRegression(object):
             print "WARNING: no feature selection, using all features"
             self.used_features = range(self.features.shape[1])
 
-    def train(self, features, grades, options={}):
+    def train(self, features, grades, essay_set, domain, options={}):
         """Solve the linear regression and save the parameters. Set the curve to get the right
         grade distribution on the training data."""
         
@@ -171,7 +171,7 @@ class LinearRegression(object):
             return self.grade_by_rounding(feature_vec, self.min_grade, self.max_grade)
         return self.curve.curve(self.predict(feature_vec))
         
-    def grade(self, features, options={}):
+    def grade(self, features, essay_set, domain, options={}):
         """Return integer grades for each feature vector in the specified array."""
         if len(features.shape) == 2:
             return [self._grade(features[i, :], options) for i in range(features.shape[0])]

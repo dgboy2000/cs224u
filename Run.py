@@ -1,6 +1,6 @@
 import DataSet, Corpus
-from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim
-from learn import LinearRegression #, OrLogit, SVM
+from feature import FeatureHeuristics, FeatureSpelling, FeatureTransitions, Utils, FeaturePOSUnigram, FeaturePOSBigram, FeatureLSI, FeaturePOS_LSI, FeaturePrompt, FeatureSim, FeatureNN
+from learn import LinearRegression, MatlabExample #, OrLogit, SVM
 import math
 import os
 import cPickle as pickle
@@ -68,6 +68,7 @@ class Run:
         all_feats.append(self._extract_feat(ds, FeatureLSI.FeatureLSI()))
         #all_feats.append(self._extract_feat(ds, FeatureSim.FeatureSim()))
         all_feats.append(self._extract_feat(ds, FeaturePOS_LSI.FeaturePOS_LSI()))
+        #all_feats.append(self._extract_feat(ds, FeatureNN.FeatureNN()))
         #if ds.getEssaySet() == 3 or ds.getEssaySet() == 5:
         #   all_feats.append(self._extract_feat(ds, FeaturePrompt.FeaturePrompt()))
 
@@ -134,10 +135,12 @@ class Run:
         
     def _learn(self, feat_mat, grades):
         learner = LinearRegression(intercept = True, debug = params.DEBUG)
+        # learner = MatlabExample()
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
-        
-        learner.train(feat_mat, grades, {'feature_selection': params.FEATURE_SELECTION})
+
+        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION})
+
         return learner
         
     def _learn_granular(self, feat_mat, grades):
@@ -152,7 +155,7 @@ class Run:
             cur_grades = [grades[ind] for ind in inds_within_one_grade]
             
             learner = LinearRegression(intercept = True, debug = params.DEBUG)
-            learner.train(cur_feat_mat, cur_grades, {'feature_selection': 'inclusive'})
+            learner.train(cur_feat_mat, cur_grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': 'inclusive'})
             grade_to_model[cur_center_grade] = learner
             
             cur_center_grade += 1
@@ -163,25 +166,27 @@ class Run:
         return grade_to_model
 
     def learn(self):
+        self.dump() # Must dump files for external processes (such as matlab)
+
         self.model = self._learn(self.train_feat_mat, self.ds_train.getGrades())
         if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
             self.granular_models = self._learn_granular(self.train_feat_mat, self.ds_train.getGrades())
         return
 
-    def _predict(self, feat_mat, model):
+    def _predict(self, feat_mat, model, postfix):
         round = False
         if self.ds_train.getEssaySet() == 8:
             round = True
 
-        return model.grade(feat_mat, {'round': round})
+        return model.grade(feat_mat, self.ds_train.getEssaySet(), self.ds_test.getDomain(), {'round': round, 'postfix': postfix})
     
     def _predict_refine(self, raw_grades, feat_mat, model):
         refined_grades = [self.granular_models[grade].grade(feat_mat[ind, :], {'round': False}) for ind, grade in enumerate(raw_grades)]
         return refined_grades
 
     def predict(self):
-        self.train_pgrades = self._predict(self.train_feat_mat, self.model)
-        self.test_pgrades = self._predict(self.test_feat_mat, self.model)
+        self.train_pgrades = self._predict(self.train_feat_mat, self.model, 'train')
+        self.test_pgrades = self._predict(self.test_feat_mat, self.model, 'test')
         
         if params.GRANULAR_MODELS and self.ds_train.getEssaySet() != 8:
             self.train_pgrades = self._predict_refine(self.train_pgrades, self.train_feat_mat, self.model)
@@ -246,40 +251,25 @@ class Run:
         for grade in grades:
             f.write("%d\n" %grade)
         f.close()
-        
+
+    def _dump_ds(self, filename, ds):
+        i = 0
+        lines = ds.getRawText() 
+        f = open(filename, 'w')
+        f.write('#grade\tessay\n')
+        for grade in ds.getGrades():
+            line = lines[i]
+            f.write('%d\t%s\n' % (grade, line))
+            i+=1
+ 
     def dump(self):
         """Dump the essays and grades to human-readable file."""
-        self._dump_feat_mat("output/features.set%d.train" %self.ds_train.getEssaySet(), self.train_feat_mat)
-        self._dump_feat_mat("output/features.set%d.test" %self.ds_test.getEssaySet(), self.test_feat_mat)
+        self._dump_feat_mat("output/features.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.train_feat_mat)
+        self._dump_feat_mat("output/features.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.test_feat_mat)
 
-        self._dump_grades("output/grades.set%d.train" %self.ds_train.getEssaySet(), self.ds_train.getGrades())
-        self._dump_grades("output/grades.set%d.test" %self.ds_test.getEssaySet(), self.ds_test.getGrades())
+        self._dump_grades("output/grades.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.ds_train.getGrades())
+        self._dump_grades("output/grades.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.ds_test.getGrades())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self._dump_ds("output/ds.set%d.dom%d.train" % (self.ds_train.getEssaySet(), self.ds_train.getDomain()), self.ds_train)
+        self._dump_ds("output/ds.set%d.dom%d.test" % (self.ds_test.getEssaySet(), self.ds_test.getDomain()), self.ds_test)
 

@@ -1,6 +1,9 @@
 import linear
 from linear import *
 
+import MatlabExample
+from MatlabExample import *
+
 import curve
 from curve import *
 
