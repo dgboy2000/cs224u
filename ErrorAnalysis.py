@@ -15,7 +15,7 @@ class ErrorAnalysis:
         
         self.essay_filename = "output/diffs.set%d.domain%d.%s" %(essay_set, grade_domain, "test" if test else "train")
         self.grade_filename = None
-        self.feature_filename = "output/features.set%d.%s" %(essay_set, "test" if test else "train")
+        self.feature_filename = "output/features.set%d.dom%d.%s" %(essay_set, grade_domain,"test" if test else "train")
         self.features = None
         
         self._read_essay_tsv_file(self.essay_filename)
@@ -63,10 +63,10 @@ class ErrorAnalysis:
         
         #rowmap = dict() # key = col index, value = col_header_name
         datamap = dict() # key = col_header_name, value = list of data
-        import pdb
-        pdb.set_trace()
+        #import pdb
+        #pdb.set_trace()
         row1 = reader.next()
-        rowlen = len(row1)-2
+        rowlen = len(row1)-1
         row_num = 1
         for i in range(rowlen): # read and count first row
             datamap[i] = list()
@@ -148,6 +148,9 @@ class ErrorAnalysis:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.scatter(self.datamap['gt_grade'], errors, marker='o', alpha = 0.25)
+        ax.set_title("%s Error by Actual Grade, Essay Set % d, Domain %d " %("Test" if self.is_test_set else "train", self.essay_set, self.grade_domain) )
+        ax.set_xlabel("Actual Grade")
+        ax.set_ylabel("Predicted Score - Actual Grade")
         plt.savefig('output/scatter_errors_by_grade.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
           
     def score_errors_by_grade(self, bins=10):
@@ -182,21 +185,62 @@ class ErrorAnalysis:
 
             plt.savefig('output/all_score_errors_by_count.set%d.domain%d.grade%d.%s.png' %(self.essay_set, self.grade_domain, g, "test" if self.is_test_set else "train"), format='png')
 
+    def count_errors_by_grade(self):
+        grades = np.asarray(self.datamap['gt_grade'])
+        min_grade = int(min(grades))
+        max_grade = int(max(grades))
+        x = []
+        y = []
+        for g in range(min_grade, max_grade+1):
+            curr_inds = np.asarray(np.where(grades==g)[0]) #indices of current grade in grades[]
+            if(len(curr_inds)==0): continue
+            x.append(g)
+            errors = np.asarray([self.datamap['pred_grade'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])])
+            count = 0
+            for ind in curr_inds:
+                if errors[ind] != 0: count += 1
+            y.append(count)
+        #import pdb; pdb.set_trace()
+        plt.clf()
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(x, y)
+        ax.set_title("Count of %s Grade Errors, Essay Set %d, Domain %d" %("Test" if self.is_test_set else "Train", self.essay_set, self.grade_domain))
+        ax.set_ylabel("Count of Errors in Predicted Grades")
+        ax.set_xlabel("Actual Grade")
+        plt.savefig('output/count_of_grade_errors_by_grade.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
+
     def plot_resid_by_feature(self, set, domain, features_used):
         features = self.features
-        errors = [self.datamap['pred_grade'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])]
+        errors = [self.datamap['pred_score'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])]
+        #import pdb; pdb.set_trace()        
         for f in features_used:
             feature_values = features[f]
             plt.clf() 
             fig = plt.figure()         
             ax = fig.add_subplot(111)
-            ax.scatter(self.datamap['gt_grade'], feature_values, errors, marker='o', alpha = 0.25) 
+            ax.scatter(feature_values, errors, marker='o', alpha = 0.25) 
             ax.set_title("All %s Errors, Essay Set %d, Domain %d, Feature = %d" %("test" if self.is_test_set else "train", self.essay_set, self.grade_domain, f))
-            ax.set_ylabel("Predicted Grade - Actual Grade")
+            ax.set_ylabel("Predicted Score - Actual Grade")
             ax.set_xlabel("Values of Feature %d" %(f))
 
             plt.savefig('output/by_feature/all_errors_by_feature.set%d.domain%d.feature%d.%s.png' %(self.essay_set, self.grade_domain, f, "test" if self.is_test_set else "train"), format='png')
+            
+    def plot_feature_by_gtgrade(self, set, domain, features_used):
+        features = self.features
+        #errors = [self.datamap['pred_grade'][essay_ind] - gt_grade for essay_ind, gt_grade in enumerate(self.datamap['gt_grade'])]
+        grades = np.asarray(self.datamap['gt_grade'])
+        for f in features_used:
+            feature_values = features[f]
+            plt.clf() 
+            fig = plt.figure()         
+            ax = fig.add_subplot(111)
+            ax.scatter(feature_values, self.datamap['gt_grade'], marker='o', alpha = 0.25) 
+            ax.set_title("Feature = %d vs. %s GT Grade, Essay Set %d, Domain %d, " %(f, "test" if self.is_test_set else "train", self.essay_set, self.grade_domain))
+            ax.set_ylabel("Actual Grade")
+            ax.set_xlabel("Values of Feature %d" %(f))
 
+            plt.savefig('output/by_feature/gt_grade_by_feature.set%d.domain%d.feature%d.%s.png' %(self.essay_set, self.grade_domain, f, "test" if self.is_test_set else "train"), format='png')
     
 if __name__ == '__main__':
     
@@ -208,15 +252,17 @@ if __name__ == '__main__':
     for essay_set in range(1,9):
         print "Analyzing errors for essay set %d, domain 1..." %essay_set,
         ea = ErrorAnalysis(essay_set, 1, test=True)
-        #for set in [1,2,3]:
-           # ea.plot_resid_by_feature(set, 1, features_used[set])
-        """
+        for set in [1,2,3]:
+            if set == essay_set:
+                ea.plot_resid_by_feature(set, 1, features_used[set])
+                ea.plot_feature_by_gtgrade(set, 1, features_used[set])
+
         ea.all_grade_errors_by_count(bins=20)
         ea.all_score_errors_by_count(bins=40)
         ea.mean_score_error_by_grade()
         ea.scatter_errors_by_grade()
         ea.score_errors_by_grade(bins=30)
-        """
+        ea.count_errors_by_grade()
         print "Done"
         
         if essay_set == 2:
@@ -224,13 +270,15 @@ if __name__ == '__main__':
             print "Analyzing errors for essay set %d, domain 2..." %essay_set,
             ea = ErrorAnalysis(essay_set, 2, test=True)
             #ea.plot_resid_by_feature(2, 2, features_used[2])
-            """
+            
             ea.all_grade_errors_by_count(bins=20)
             ea.all_score_errors_by_count(bins=40)
             ea.mean_score_error_by_grade()
             ea.scatter_errors_by_grade()
             ea.score_errors_by_grade(bins=30)
-            """
+            ea.count_errors_by_grade()
+            ea.plot_resid_by_feature(2,2,features_used[2])
+            ea.plot_feature_by_gtgrade(2,2,features_used[2])
             print "Done"
 
 
