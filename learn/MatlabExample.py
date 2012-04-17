@@ -4,7 +4,7 @@ import os
 
 class MatlabExample(object):
 
-    def train(self, features, grades, essay_set, domain):
+    def train(self, features, grades, essay_set, domain, options={}):
         """Train the learner on the specified features and grades."""
         cmd = 'echo "prefix=\'output/features.set%d.dom%d\';prefix2=\'output/ds.set%d.dom%d\';addpath(genpath(\'matlab\'));trainTestEssayPipe" | matlab -nodesktop' % (essay_set, domain, essay_set, domain)
         print cmd
