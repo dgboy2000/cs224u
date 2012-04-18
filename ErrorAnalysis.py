@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pylab as P
+from scipy import stats
 
 
 
@@ -240,8 +241,34 @@ class ErrorAnalysis:
             ax.set_ylabel("Actual Grade")
             ax.set_xlabel("Values of Feature %d" %(f))
 
-            plt.savefig('output/by_feature/gt_grade_by_feature.set%d.domain%d.feature%d.%s.png' %(self.essay_set, self.grade_domain, f, "test" if self.is_test_set else "train"), format='png')
+            plt.savefig('output/gt_grade_by_feature.set%d.domain%d.feature%d.%s.png' %(self.essay_set, self.grade_domain, f, "test" if self.is_test_set else "train"), format='png')
     
+    def actual_vs_pred_scoree(self, set, domain):
+        actual = np.asarray(self.datamap['gt_grade'])
+        pred = np.asarray(self.datamap['pred_score'])
+        fig = plt.figure()         
+        ax = fig.add_subplot(111) 
+        ax.scatter(actual, pred, marker='o', alpha = 0.25)  
+        ax.set_title("Actual Grades vs. Predicted Scores, %s Essay Set %d, Domain %d" %("Test" if self.is_test_set else "Train", self.essay_set, self.grade_domain))
+        ax.set_ylabel("Predicted Score")
+        ax.set_xlabel("Actual Grade")
+        plt.savefig('output/actual_vs_pred.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
+
+    def actual_vs_pred_grade(self, set, domain):
+        actual = np.asarray(self.datamap['gt_grade'])
+        pred = np.asarray(self.datamap['pred_grade'])
+        mingrade = min(actual)
+        maxgrade = max(actual)
+        grad, inter, r, p, std_err = stats.linregress(actual, pred)
+        fig = plt.figure()         
+        ax = fig.add_subplot(111) 
+        ax.scatter(actual, pred, marker='o', alpha = 0.1)  
+        ax.plot((mingrade, maxgrade), [grad*x + inter for x in [mingrade, maxgrade]])
+        ax.set_title("Actual Grades vs. Predicted Grades, %s Essay Set %d, Domain %d" %("Test" if self.is_test_set else "Train", self.essay_set, self.grade_domain))
+        ax.set_ylabel("Predicted Grade")
+        ax.set_xlabel("Actual Grade")
+        plt.savefig('output/actual_vs_pred.set%d.domain%d.%s.png' %(self.essay_set, self.grade_domain, "test" if self.is_test_set else "train"), format='png')
+
 if __name__ == '__main__':
     
     features_used = dict()
@@ -251,7 +278,8 @@ if __name__ == '__main__':
     
     for essay_set in range(1,9):
         print "Analyzing errors for essay set %d, domain 1..." %essay_set,
-        ea = ErrorAnalysis(essay_set, 1, test=True)
+        ea = ErrorAnalysis(essay_set, 1, test=True) 
+        """
         for set in [1,2,3]:
             if set == essay_set:
                 ea.plot_resid_by_feature(set, 1, features_used[set])
@@ -263,6 +291,8 @@ if __name__ == '__main__':
         ea.scatter_errors_by_grade()
         ea.score_errors_by_grade(bins=30)
         ea.count_errors_by_grade()
+        """
+        ea.actual_vs_pred_grade(essay_set, 1)
         print "Done"
         
         if essay_set == 2:
@@ -271,6 +301,7 @@ if __name__ == '__main__':
             ea = ErrorAnalysis(essay_set, 2, test=True)
             #ea.plot_resid_by_feature(2, 2, features_used[2])
             
+            """
             ea.all_grade_errors_by_count(bins=20)
             ea.all_score_errors_by_count(bins=40)
             ea.mean_score_error_by_grade()
@@ -279,6 +310,8 @@ if __name__ == '__main__':
             ea.count_errors_by_grade()
             ea.plot_resid_by_feature(2,2,features_used[2])
             ea.plot_feature_by_gtgrade(2,2,features_used[2])
+            """
+            ea.actual_vs_pred_grade(set, 2)
             print "Done"
 
 
