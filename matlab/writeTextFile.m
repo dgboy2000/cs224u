@@ -1,6 +1,6 @@
-function writeTextFile(fileName,cellOfStrings,opt) 
+function writeTextFile(fileName,cellOfStrings,opt)
 % writeTextFile(fileName,cellOfStrings,options)
-% opt.writeFlag = 
+% opt.writeFlag =
 %       'a'     open or create file for writing; append data to end of file
 %       'r+'    open (do not create) file for reading and writing
 %       'w+'    open or create file for reading and writing; discard
@@ -9,7 +9,7 @@ function writeTextFile(fileName,cellOfStrings,opt)
 %               to end of file
 %       'W'     open file for writing without automatic flushing
 %       'A'     open file for appending without automatic flushing
-% opt.separator = 
+% opt.separator =
 %       '\n' (default) or ';' or ' ' etc.
 % richard _at_ socher .org
 
@@ -35,7 +35,11 @@ elseif iscell(cellOfStrings{1})
     fid = fopen(fileName, opt.writeFlag);
     for s = 1:length(cellOfStrings)
         for w = 1:length(cellOfStrings{s})
-            fprintf(fid, ['%s' ' '], cellOfStrings{s}{w});
+            if ischar(cellOfStrings{s})
+                fprintf(fid, ['%s' opt.separator], cellOfStrings{s}{w});
+            else
+                fprintf(fid, ['%s' opt.separator], num2str(cellOfStrings{s}{w}));
+            end
         end
         fprintf(fid, '\n');
     end
