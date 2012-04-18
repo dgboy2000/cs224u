@@ -42,10 +42,8 @@ diabetes:
 
 mex:	clean 
 	echo -e 'Making mex'
-	mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_train.cpp $(SRC)reg_RF.cpp -o mexRF_train -DMATLAB
-	#mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_train.cpp $(SRC)reg_RF.cpp
-	#mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_predict.cpp $(SRC)reg_RF.cpp 
-	mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_predict.cpp $(SRC)reg_RF.cpp -o mexRF_predict -DMATLAB
+	mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_train.cpp $(SRC)reg_RF.cpp -o mexRF_train -DMATLAB 
+	mex $(SRC)cokus.cpp $(SRC)mex_regressionRF_predict.cpp $(SRC)reg_RF.cpp -o mexRF_predict -DMATLAB 
 #mex mex_regressionRF_train.c reg_RF.o -o mexRF_train -DMATLAB $(ICC_LDFLAGS)
 
 reg_RF:

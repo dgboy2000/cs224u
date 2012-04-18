@@ -1,0 +1,169 @@
+This is the Matlab programs for Stream clustering by AP (StrAP).
+Created by 
+Xiangliang ZHANG
+
+CopyRight (c) 2008-2010, Xiangliang ZHANG
+All rights reserved.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+StrAP is a stream clustering method based on Affinity Propagation (AP).
+
+It was firstly proposed in the paper:
+
+	Xiangliang Zhang, Cyril Furtlehner, Michele Sebag, "Data streaming with Affinity propagation". Proceedings of  European Conference on Machine Learning and Principles and Practice of Knowledge Discovery in Databases (ECML/PKDD'2008), Antwerp, Belgium, pp. 628-643.
+
+Then, its parameter setting is online adapted as proposed in paer:
+
+	Xiangliang Zhang, Cyril Furtlehner, Julien Perez, Cecile Germain,  Michele Sebag, " Toward Autonomic Grids: Analyzing the Job Flow with Affinity Streaming" . Proceedings of 15th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (SIGKDD'2009), Paris, France, June 28 ~ July 1, 2009
+
+Compared to StrAP_Matlabl,
+StrAP_Matlabl_full = StrAP_Matlabl + parameter online adaption function.
+It added the parameter online adaption function.
+If you do not want to use the adaption part, just set the adaption parameters as 0 (unusable).
+
+StrAP is an effective and efficient stream clustering method.
+In this Matlab package, 1% of the KDDcup 99 data is tested for demonstration.
+
+For having the newest version, welcome to my homepage
+http://www.lri.fr/~xlzhang
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Usage:
+in Matlab, type
+
+clustering_stream_byStrAP
+
+or
+
+clustering_stream_bykcc  (used as baseline)
+
+
+you will get the clustering results saved as "resI.mat",
+"I" is a number, e.g., 1,2,3,...,  each "resI.mat" contains the clustering results in 30 restarting steps.
+
+clustering accuracy and purity will be also shown in figures.
+
+The adaption of lambda process in save as
+"lambda_adaption_by_egreedy.mat" when using e-greedy search,
+"lambda_adaption_by_gp.mat" when using gaussian process regression.
+
+see FAQ for more information.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Parameter setting:
+
+in clustering_stream_byStrAP.m  or  clustering_stream_bykcc.m, the parameters for StrAP or Streaming-k-centers
+can be set according to the application requirement.
+ 
+'distance' 		the threshold for comparing new point with the model, deciding whether it should go to the Reservoir
+
+'is_label_num' 		the label is numerical (1) or categorical(0)
+
+'Max_cache' 		the maximum size of Reservoir  (used as the criterion for triggering restart)
+ 
+'PH'			use (1) or not-use (0) Page-Hinkley as the criterion for triggering restart
+
+'delt'			PH tolerance parameter,  a small real value
+
+'lambda'		PH parameter, threshold for PH determining the detection of changes
+
+'damp'			AP parameter, damping factor valued between 0 and 1
+
+'X'			decay window lightening the weight of old clusters.
+
+'all_R' 		in PH case, using all elements in Reservoir for restarting ? (1, yes) (0, no, only latest 300)
+
+'cm'			in streaming k-centers,  the proportion of centers from memory for k-centers initial selection of centers, K*cm number of initial centers are from the previous model (memory) when restarting
+
+'egreedy'		use e-greedy search to adapt the value of lambda (threshold for PH)
+
+'gp'			use gaussian process regression to adapt the value of lambda (threshold for PH)
+
+'random_start'		the number of first restarting steps in which 'lambda' is set randomly in the given range
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Files:
+
+clustering_stream_byStrAP.m	is the main program used to cluster the streaming dataset (e.g., KDDcup 99) by StrAP, as we described in the Reference paper.
+
+stream_AP_load.m	StrAP, in which the data can be load-in once
+stream_AP_read.m        StrAP, in which the data can be read line by line (if the data is too huge to be load)
+
+build_cluster.m		build the clustering model
+
+update_cluster.m	update the clustering model after restarting
+
+com_accu.m		compare the true label and given label
+
+draw_accu.m		draw the clustering accuracy in figure, output the accuracy, error rate, outliers rate
+draw_purity.m		draw the clustering purity in figure, output the purity
+model_online_report.m	online clustering output demonstrated by bars
+
+update_context.m	update the 'label_all' in model
+update_context_2.m	update the 'label_all' in model
+	
+uniq_my.m		get the unique elements and their counts
+uniq_my_rows.m		get the unique rows and their counts
+uniq_my_cell.m		get the unique cells and their counts
+
+similarity_nse.m	used to obtain the negative squared error(Euclidean distance) for each pair of examples.
+
+apclustermex.m      	clustering method AP
+apclustermex_.mexglx  	mex of AP for Linux system
+apclustermex_.mexa64  mex of AP for Linux64 system
+apclustermex_.mexw32  	mex of AP for Windows system
+
+clustering_stream_bykcc.m   is the main program of clustering streams by streaming k-centers method (used as a baseline) 
+
+stream_kcc_load.m	streaming k-centers method in the same framework as StrAP (just replace AP with k-centers, WAP with kcc_memory)
+
+kcc.m                 	k-centers  clustering method
+kcc_memory.m		k-centers  clustering method with memory, which means the initially selected centers are partly from the given set.
+
+data/			has the 1% of KDDcup 99 data for testing, data and label
+
+egreedy_lambda.m	get appropriate value for lambda using e-greedy search 
+
+gp_lambda.m		get appropriate value for lambda using gaussian process regression
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+If you have "apclustermex" problems, please visit:
+http://www.psi.toronto.edu/affinitypropagation/ 
+
+to download the appropriate version of AP codes.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Reference paper:
+
+Xiangliang Zhang, Cyril Furtlehner, Michele Sebag, "Data streaming with Affinity propagation". Proceedings of  European Conference on Machine Learning and Principles and Practice of Knowledge Discovery in Databases (ECML/PKDD'2008), Antwerp, Belgium, pp. 628-643.
+
+Xiangliang Zhang, Cyril Furtlehner, Julien Perez, Cecile Germain,  Michele Sebag, " Toward Autonomic Grids: Analyzing the Job Flow with Affinity Streaming" . Proceedings of 15th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (SIGKDD'2009), Paris, France, June 28 ~ July 1, 2009
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+If you used this software, please cite it as
+
+@INPROCEEDINGS{ZHANG:2009:INRIA-00393825:1,
+  title = {{T}oward {A}utonomic {G}rids: {A}nalyzing the {J}ob {F}low with {A}ffinity {S}treaming},
+  year = {2009},
+  author = {{Z}hang, {X}iangliang and {F}urtlehner, {C}yril and {P}erez, {J}ulien and {G}ermain, {C}ecile and {S}ebag, {M}ichele},
+  booktitle = {15th {ACM} {SIGKDD} {C}onference on {K}nowledge {D}iscovery and {D}ata {M}ining ({KDD})},
+  pages = {987-995},
+  address = {{P}aris {F}rance},
+}
+
+@INPROCEEDINGS{ZHANG:2008:INRIA-00289679:1,
+  title = {{D}ata {S}treaming with {A}ffinity {P}ropagation},
+  year = {2008},
+  author = {{Z}hang, {X}iangliang and {F}urtlehner, {C}yril and {S}ebag, {M}ich{\`e}le},
+  booktitle = {{E}uropean {C}onference on {M}achine {L}earning and {P}rinciples and {P}ractice of {K}nowledge {D}iscovery in {D}atabases ({ECML 2008})},
+  pages = {628-643},
+  address = {{A}ntwerp {B}elgium},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+If you have any questions or comments, please send xlzhang@lri.fr, or xiangliangzhang@gmail.com
+
+For more infomation and newer version, please visit http://www.lri.fr/~xlzhang
+Thanks for your interest.
+2009-11-23

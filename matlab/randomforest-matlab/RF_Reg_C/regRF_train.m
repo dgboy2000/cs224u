@@ -156,7 +156,8 @@ function model=regRF_train(X,Y,ntree,mtry, extra_options)
     
     [N D] = size(X);
     
-    if length(unique(Y))<=5,  warning('Do you want regression? there are just 5 or less unique values');  end
+    %RS: ignore for now
+    %if length(unique(Y))<=5,  warning('Do you want regression? there are just 5 or less unique values');  end
     if N==0,   error('Data (X) has 0 rows');  end
     if mtry<1 || mtry>D  ,  warning('Invalid mtry. reset to within valid range'); DEFAULTS_ON=1;   end
     mtry = max(1, min(D,round(mtry)));
