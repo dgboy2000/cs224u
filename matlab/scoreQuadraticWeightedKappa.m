@@ -18,8 +18,7 @@ function score = scoreQuadraticWeightedKappa(X, minRating, maxRating)
 %   scoreQuadraticWeightedKappa(X, minRating, maxRating), where minRating
 %   is the minimum possible rating, and maxRating is the maximum possible
 %   rating
-%   
-%   Author: Ben Hamner (ben@benhamner.com)
+
 
 if nargin==3
     M = confusionMatrix(X, minRating, maxRating);
