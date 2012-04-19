@@ -3,7 +3,7 @@ ESSAY_SETS = range(1, 9)
 
 # Learning parameters
 GRANULAR_MODELS = False
-FEATURE_SELECTION = 'exclusive' # None | 'inclusive' | 'exclusive'
+FEATURE_SELECTION = None # None | 'inclusive' | 'exclusive'
 DUMP = False # True | False  Dump features and grades to file and quit
 
 #(deprecated)TOTAL_WORD_BIGRAMS = 50
