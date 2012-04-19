@@ -217,10 +217,7 @@ class Run:
         f.write('#real_diff\tresolved_diff\tgt_grade\tpred_score\tpred_grade\tessay\n')
         for grade in ds.getGrades():
             pgrade = pgrades[i]
-            try:
-                real_pgrade = real_pgrades[i]
-            except:
-                import pdb; pdb.set_trace()
+            real_pgrade = real_pgrades[i]
             line = lines[i]
             f.write('%f\t%d\t%d\t%f\t%d\t%s\n' % (math.fabs(real_pgrade-float(grade)), math.fabs(pgrade-grade), grade, real_pgrade, pgrade, line))
             i+=1
