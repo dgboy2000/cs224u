@@ -3,6 +3,8 @@ import numpy as np
 import os
 
 class MatlabExample(object):
+    def __init__(self, **kwargs):
+        """Ignore keyword arguments."""
 
     def train(self, features, grades, essay_set, domain, option={}):
         """Train the learner on the specified features and grades."""
