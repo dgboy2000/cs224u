@@ -2,6 +2,7 @@ DEBUG = True
 ESSAY_SETS = range(1, 9)
 
 # Learning parameters
+LEARNER_CLASS = 'LinearRegression' # 'LinearRegression' | 'MatlabExample'
 GRANULAR_MODELS = False
 FEATURE_SELECTION = None # None | 'inclusive' | 'exclusive'
 DUMP = False # True | False  Dump features and grades to file and quit
@@ -29,5 +30,5 @@ FEATURE_CACHE = {
     'FeaturePOS_LSI': True,
     'genLSA': True,
     'FeatureSim': True,
-    'FeatureNN': False,
+    'FeatureNN': True,
     }

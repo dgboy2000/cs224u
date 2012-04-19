@@ -7,9 +7,8 @@ from scipy import linalg
 class LinearRegression(object):
     """Interface for scipy linear regression."""
     
-    def __init__(self, intercept=False, debug=False, **kwargs):
+    def __init__(self, debug=False, **kwargs):
         self.debug = debug
-        self.has_intercept = intercept
         self.used_features = None
         
     def _select_features_inclusive(self):
@@ -21,7 +20,7 @@ class LinearRegression(object):
         best_score = float("inf")
         remaining_features = set(range(num_features))
         self.used_features = used_features = []
-        while len(remaining_features) > 0 and len(self.used_features) + (1 if self.has_intercept else 0) < num_samples:
+        while len(remaining_features) > 0 and len(self.used_features) + 1 < num_samples:
             best_iter_score = float("inf")
             for feat_ind in remaining_features:
                 iter_features = np.hstack((features, np.transpose(np.array((self.features[:,feat_ind],)))))
@@ -80,7 +79,6 @@ class LinearRegression(object):
         elif options['feature_selection'] == 'exclusive':
             self._select_features_exclusive()
         else:
-            print "WARNING: no feature selection, using all features"
             self.used_features = range(self.features.shape[1])
 
     def train(self, features, grades, essay_set, domain, options={}):
@@ -99,15 +97,14 @@ class LinearRegression(object):
         self.select_features(options)
         best_features = self.get_feature_subset(self.features, self.used_features)    
         
-        if self.has_intercept:
-            params, residues, rank, s = linalg.lstsq(np.hstack((best_features, np.ones((num_samples,1)))), self.grades)
+        if 'regularization' in options:
+            pass
+# <math>\hat{x} = (A^{T}A+ \Gamma^{T} \Gamma )^{-1}A^{T}\mathbf{b}</math>
         else:
-            params, residues, rank, s = linalg.lstsq(best_features, self.grades)
+            params, residues, rank, s = linalg.lstsq(np.hstack((best_features, np.ones((num_samples,1)))), self.grades)
         
-        self.params = params
-        if self.has_intercept:
-            self.intercept = self.params[-1]
-            self.params = self.params[:-1]
+        self.intercept = params[-1]
+        self.params = params[:-1]
             
         scores = [self.predict(self.features[i,:]) for i in range(self.features.shape[0])]
         grade_counts = {}
@@ -148,18 +145,12 @@ class LinearRegression(object):
         BIC = sum of squared errors + k*log(n)
         """
         num_essays = features.shape[0]
-        if self.has_intercept:
-            params, sq_error, rank, s = np.linalg.lstsq(np.hstack((features, np.ones((num_essays,1)))), grades)            
-        else:
-            params, sq_error, rank, s = np.linalg.lstsq(features, grades)
+        params, sq_error, rank, s = np.linalg.lstsq(np.hstack((features, np.ones((num_essays,1)))), grades)
 
         # Compute the sq_error since sometimes numpy fails to return it
         sq_error = 0
         for essay_ind in range(num_essays):
-            if self.has_intercept:
-                sq_error = sq_error + (params[-1] + np.dot(params[:-1], features[essay_ind, :]) - grades[essay_ind]) ** 2
-            else:
-                sq_error = sq_error + (np.dot(params, features[essay_ind, :]) - grades[essay_ind]) ** 2
+            sq_error = sq_error + (params[-1] + np.dot(params[:-1], features[essay_ind, :]) - grades[essay_ind]) ** 2
                 
         return num_essays * log(sq_error / num_essays) + len(params) * log(num_essays) # BIC score
         # return num_essays * log(sq_error / num_essays) + 2 * len(params) # AIC score
@@ -184,9 +175,7 @@ class LinearRegression(object):
         assert len(self.params) > 0
         if self.used_features is not None:
             x = [x[i] for i in self.used_features]
-        y_hat = np.vdot(self.params, x)
-        if self.has_intercept:
-            y_hat += self.intercept
+        y_hat = np.vdot(self.params, x) + self.intercept
         return y_hat
         
     def grade_by_rounding(self, x, min_grade, max_grade):
