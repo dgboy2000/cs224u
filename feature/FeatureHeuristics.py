@@ -4,10 +4,11 @@ import math
 import nltk
 import numpy as np
 import re
+import LanguageUtils
 
 class FeatureHeuristics(object):
     
-    word_splitter = re.compile("\\s+")
+    #word_splitter = re.compile("\\s+")
     sentence_splitter = nltk.PunktSentenceTokenizer()
     entity_types = ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT"]
 
@@ -36,7 +37,8 @@ class FeatureHeuristics(object):
         lenfeats = list()
         for line in ds.getRawText():
             curfeat = list()
-            words = (FeatureHeuristics.word_splitter.split(line))
+            #words = (FeatureHeuristics.word_splitter.split(line))
+            words = (LanguageUtils.tokenize(line))
             sentences = FeatureHeuristics.sentence_splitter.tokenize(line)
             numChars = len(line)
             numWords = len(words)
