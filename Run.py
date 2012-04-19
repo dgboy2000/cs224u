@@ -171,7 +171,7 @@ class Run:
         return
 
     def _predict(self, feat_mat, model, postfix):
-        round = True
+        round = False
         if self.ds_train.getEssaySet() == 8:
             round = True
 

@@ -103,7 +103,7 @@ class LinearRegression(object):
             # <math>\hat{x} = (A^{T}A+ \Gamma^{T} \Gamma )^{-1}A^{T}\mathbf{b}</math>
             k = options['regularization']
             A_T = A.transpose()
-            params = np.linalg.inv(A_T.dot(A) + k**2 * np.identity(num_features+1)).dot(A_T).dot(self.grades)
+            params = np.linalg.inv(A_T.dot(A) + k**2 * np.identity(len(self.used_features)+1)).dot(A_T).dot(self.grades)
         else:
             params, residues, rank, s = linalg.lstsq(A, self.grades)
         
