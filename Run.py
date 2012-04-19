@@ -134,8 +134,8 @@ class Run:
         return
         
     def _learn(self, feat_mat, grades):
-        learner = LinearRegression(intercept = True, debug = params.DEBUG)
-        # learner = MatlabExample()
+        # learner = LinearRegression(intercept = True, debug = params.DEBUG)
+        learner = MatlabExample()
         # learner = SVM(debug = params.DEBUG)
         # learner = OrLogit(debug = params.DEBUG)
 

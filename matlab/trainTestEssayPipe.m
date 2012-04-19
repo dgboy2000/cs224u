@@ -1,7 +1,11 @@
 
 %prefix='output/features.set1.dom1';prefix2='output/ds.set1.dom1';
 %matlab/trainTestEssayPipe
+file_trn = [prefix2 '.train' '.matOut'];
+file_tst = [prefix2 '.test' '.matOut'];
 
+delete(file_trn)
+delete(file_tst)
 
 %compile everything
 % if strcmpi(computer,'PCWIN') |strcmpi(computer,'PCWIN64')
@@ -57,25 +61,62 @@ X_tst = bsxfun(@times,stdev,X_tst);
 
 %% CV over boosting (sometimes a good linear regression performs much better!)
 % different CV sets for diff. essay sets
-if strcmp('output/ds.set2.dom2',prefix2)
-% SUCKS:   maxKappaBoost=0.65798
-    allTreeCV = [110 130 150 ];
-    allMtryCV = [32 60 64 ];
-    allNodeSizeCV = [15 20 25 ];
-else
-    allTreeCV = [100 110 130 150 170 200];
-    allMtryCV = [2 4 6 32 60 64 70 128 160 200 ];
-    allNodeSizeCV = [3 20 30 35 50 70 5  25 ];
+switch prefix2
+    case 'output/ds.set1.dom1',
+        allTreeCV = [130 ];
+        allMtryCV = [160 ];
+        allNodeSizeCV = [5 ];
+    case 'output/ds.set2.dom1',
+        allTreeCV = [110 ];
+        allMtryCV = [2 ];
+        allNodeSizeCV = [20 ];
+    case 'output/ds.set2.dom2',
+        % SUCKS:   maxKappaBoost=0.65798 :/
+        allTreeCV = [150 ];
+        allMtryCV = [60 ];
+        allNodeSizeCV = [25 ];
+    case 'output/ds.set3.dom1',
+        allTreeCV = [130 ];
+        allMtryCV = [160 ];
+        allNodeSizeCV = [70 ];
+    case 'output/ds.set4.dom1',
+        allTreeCV = [110 ];
+        allMtryCV = [70 ];
+        allNodeSizeCV = [3 ];
+    case 'output/ds.set5.dom1',
+        allTreeCV = [170 ];
+        allMtryCV = [6 ];
+        allNodeSizeCV = [3 ];
+    case 'output/ds.set6.dom1',
+        allTreeCV = [150 ];
+        allMtryCV = [70 ];
+        allNodeSizeCV = [25 ];
+    case 'output/ds.set7.dom1',
+        allTreeCV = [150 ];
+        allMtryCV = [64 ];
+        allNodeSizeCV = [3 ];
+    case 'output/ds.set8.dom1',
+        allTreeCV = [170 ];
+        allMtryCV = [200 ];
+        allNodeSizeCV = [25 ];
+    otherwise
+        error('different prefix2 than what is implemented?')
 end
+
+% % FOR CV Only:
+% allTreeCV = [100 110 130 150 170 200];
+%     allMtryCV = [2 4 6 32 60 64 70 128 160 200 ];
+%     allNodeSizeCV = [3 20 30 35 50 70 5  25 ];
+
 
 maxKappaBoost = -Inf;
 for imp = 1 % 0:1
     %for bias=0:1
     for bias=1
         %for numTrees = [50 70 90 100 110 150 200]
-        for numTrees = allTreeCV
-            %for mtry = [2 3 4 5 8 16 32 64 128]
-            for mtry = allMtryCV
+        for mtry = allMtryCV
+            for numTrees = allTreeCV
+                %for mtry = [2 3 4 5 8 16 32 64 128]
                 for nodeSize = allNodeSizeCV
                     
                     clear extra_options
@@ -121,27 +162,27 @@ disp(prefix)
 disp(['maxKappaBoost=' num2str(maxKappaBoost)])
 disp(bestParams)
 writeTextFile('_allResults.txt',{prefix 'boost' maxKappaBoost bestParams.mtry  bestParams.numTrees ...
-    bestParams.corr_bias bestParams.importance bestParams.nodeSize},struct('separator', '\t'))
+    bestParams.nodeSize},struct('separator', '\t')) %bestParams.corr_bias bestParams.importance always 1
 
 
 %% Bagging!
-% %%% classifications:
-% % ntrees = 300;
-% % Bclass = TreeBagger(ntrees,X_trn,Y_trn)
-% % Y_hat_bagClass = predict(Bclass,X_tst);
-% % evalTest = [Y_tst str2double(Y_hat_bagClass)];
-% % kappaTestBagClass = scoreQuadraticWeightedKappa(evalTest)
-% 
+%%% classifications:
+% ntrees = 300;
+% Bclass = TreeBagger(ntrees,X_trn,Y_trn)
+% Y_hat_bagClass = predict(Bclass,X_tst);
+% evalTest = [Y_tst str2double(Y_hat_bagClass)];
+% kappaTestBagClass = scoreQuadraticWeightedKappa(evalTest)
+%
 % ntrees = 160;
 % Breg = TreeBagger(ntrees,X_trn,Y_trn,'Method','regression','oobpred','on')
-% plot(oobError(Breg))
-% xlabel('number of grown trees')
-% ylabel('out-of-bag error')
-% 
+% % plot(oobError(Breg))
+% % xlabel('number of grown trees')
+% % ylabel('out-of-bag error')
+%
 % Y_hat_bag = predict(Breg,X_tst);
 % evalTest = [Y_tst round(Y_hat_bag)];
 % kappaTestReg = scoreQuadraticWeightedKappa(evalTest)
-% %TODO: Average this too -> how to weight?
+%TODO: Average this too? try
 
 %% Gaussian Process Regression
 
@@ -220,22 +261,22 @@ maxKappaEns = -Inf;
 % % % Mh... this basically just picks the right threshold using our validation-test data, so its improvements are an oracle upper bound
 % % % for alpha = 0:0.01:1%
 % for alpha = 1/2 % just average all sets %TODO: find on separate set!
-%     Y_trn_ens = sum([ alpha*Y_trn_boost (1-alpha)*Y_trn_linReg ],2);    
+%     Y_trn_ens = sum([ alpha*Y_trn_boost (1-alpha)*Y_trn_linReg ],2);
 %     Y_hat_ens = sum([ alpha*Y_hat_boost (1-alpha)*Y_hat_linReg ],2);
 
-    Y_trn_ens = mean([ Y_trn_boost Y_trn_linReg Y_trn_svm],2);
-    Y_hat_ens = mean([ Y_hat_boost Y_hat_linReg Y_hat_svm],2);
+Y_trn_ens = mean([ Y_trn_boost Y_trn_linReg Y_trn_svm],2);
+Y_hat_ens = mean([ Y_hat_boost Y_hat_linReg Y_hat_svm],2);
 
-    evalTest = [Y_tst round(Y_hat_ens)];
-    kappaTest_ens = scoreQuadraticWeightedKappa(evalTest);
-    disp(['kappaTest_ens = ' num2str(kappaTest)])
-    if kappaTest_ens>maxKappaEns
-        maxKappaEns =kappaTest_ens
-        %bestParamsEns.alpha = alpha;
-        %disp(bestParamsEns)
-        best_Y_hat = Y_hat_ens;
-        best_Y_trn = Y_trn_ens;
-    end
+evalTest = [Y_tst round(Y_hat_ens)];
+kappaTest_ens = scoreQuadraticWeightedKappa(evalTest);
+disp(['kappaTest_ens = ' num2str(kappaTest)])
+if kappaTest_ens>maxKappaEns
+    maxKappaEns =kappaTest_ens
+    %bestParamsEns.alpha = alpha;
+    %disp(bestParamsEns)
+    best_Y_hat = Y_hat_ens;
+    best_Y_trn = Y_trn_ens;
+end
 % end
 
 writeTextFile('_allResults.txt',{prefix 'ens' maxKappaEns },struct('separator', '\t'))
@@ -245,28 +286,29 @@ writeTextFile('_allResults.txt',{prefix 'ens' maxKappaEns },struct('separator', 
 allBestKappas = [maxKappaBoost,maxKappaLinReg,maxKappaEns,maxKappaSVM]
 [val ind] = max(allBestKappas);
 opt.writeFlag = 'a+';
+
 if ind==1
     disp(['Boosting Wins with ' num2str(val) ])
-    writeTextFile([prefix2 '.train' '.matOut'],Y_trn_boost,opt);
-    writeTextFile([prefix2 '.test' '.matOut'],Y_hat_boost,opt);
+    writeTextFile(file_trn,Y_trn_boost,opt);
+    writeTextFile(file_tst,Y_hat_boost,opt);
 elseif ind==2
     disp(['LinReg Wins with ' num2str(val) ])
-    writeTextFile([prefix2 '.train' '.matOut'],Y_trn_linReg,opt);
-    writeTextFile([prefix2 '.test' '.matOut'],Y_hat_linReg,opt);
+    writeTextFile(file_trn,Y_trn_linReg,opt);
+    writeTextFile(file_tst,Y_hat_linReg,opt);
 elseif ind==3
     disp(['Ensemble Wins with ' num2str(val) ])
-    writeTextFile([prefix2 '.train' '.matOut'],best_Y_trn,opt);
-    writeTextFile([prefix2 '.test' '.matOut'],best_Y_hat,opt);
+    writeTextFile(file_trn,best_Y_trn,opt);
+    writeTextFile(file_tst,best_Y_hat,opt);
 elseif ind==4
     disp(['SVM Wins with ' num2str(val) ])
-    writeTextFile([prefix2 '.train' '.matOut'],Y_trn_svm,opt);
-    writeTextFile([prefix2 '.test' '.matOut'],Y_hat_svm,opt);
+    writeTextFile(file_trn,Y_trn_svm,opt);
+    writeTextFile(file_tst,Y_hat_svm,opt);
 else
     error('ERROR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! only 4 options!!')
 end
 
 
-
+disp('DONE.')
 
 
 
