@@ -136,7 +136,7 @@ class Run:
     def _learn(self, feat_mat, grades):
         LearnerClass = eval(params.LEARNER_CLASS)
         learner = LearnerClass(debug = params.DEBUG)
-        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION})
+        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION, 'regularization': params.REGULARIZATION})
 
         return learner
         

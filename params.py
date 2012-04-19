@@ -3,6 +3,7 @@ ESSAY_SETS = range(1, 9)
 
 # Learning parameters
 LEARNER_CLASS = 'LinearRegression' # 'LinearRegression' | 'MatlabExample'
+REGULARIZATION = 0.1 # The value of the regularization parameter in the learning method, or None if no regularization
 GRANULAR_MODELS = False
 FEATURE_SELECTION = None # None | 'inclusive' | 'exclusive'
 DUMP = False # True | False  Dump features and grades to file and quit

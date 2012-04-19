@@ -97,11 +97,15 @@ class LinearRegression(object):
         self.select_features(options)
         best_features = self.get_feature_subset(self.features, self.used_features)    
         
-        if 'regularization' in options:
-            pass
-# <math>\hat{x} = (A^{T}A+ \Gamma^{T} \Gamma )^{-1}A^{T}\mathbf{b}</math>
+        A = np.hstack((best_features, np.ones((num_samples,1))))
+        if 'regularization' in options and options['regularization'] is not None:
+            # http://en.wikipedia.org/wiki/Tikhonov_regularization
+            # <math>\hat{x} = (A^{T}A+ \Gamma^{T} \Gamma )^{-1}A^{T}\mathbf{b}</math>
+            k = options['regularization']
+            A_T = A.transpose()
+            params = np.linalg.inv(A_T.dot(A) + k**2 * np.identity(num_features+1)).dot(A_T).dot(self.grades)
         else:
-            params, residues, rank, s = linalg.lstsq(np.hstack((best_features, np.ones((num_samples,1)))), self.grades)
+            params, residues, rank, s = linalg.lstsq(A, self.grades)
         
         self.intercept = params[-1]
         self.params = params[:-1]
