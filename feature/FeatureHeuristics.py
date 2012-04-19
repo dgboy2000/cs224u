@@ -10,6 +10,7 @@ class FeatureHeuristics(object):
     word_splitter = re.compile("\\s+")
     sentence_splitter = nltk.PunktSentenceTokenizer()
     entity_types = ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT"]
+    notable_punctuation = ['.', '?', '!', '-', ';']
 
     def __init__(self):
         self.features = np.array(())
@@ -81,7 +82,11 @@ class FeatureHeuristics(object):
                 pass
             curfeat.append(1 if line.count('@') > 0 else 0)
             
+            for punct in self.notable_punctuation:
+                curfeat.append(line.count(punct))
+                
             
+                
             #print curfeat
 
             lenfeats.append(curfeat)
