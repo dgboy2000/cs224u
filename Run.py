@@ -134,12 +134,9 @@ class Run:
         return
         
     def _learn(self, feat_mat, grades):
-        learner = LinearRegression(intercept = True, debug = params.DEBUG)
-        # learner = MatlabExample()
-        # learner = SVM(debug = params.DEBUG)
-        # learner = OrLogit(debug = params.DEBUG)
-
-        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION})
+        LearnerClass = eval(params.LEARNER_CLASS)
+        learner = LearnerClass(debug = params.DEBUG)
+        learner.train(feat_mat, grades, self.ds_train.getEssaySet(), self.ds_train.getDomain(), {'feature_selection': params.FEATURE_SELECTION, 'regularization': params.REGULARIZATION})
 
         return learner
         
@@ -215,10 +212,7 @@ class Run:
         f.write('#real_diff\tresolved_diff\tgt_grade\tpred_score\tpred_grade\tessay\n')
         for grade in ds.getGrades():
             pgrade = pgrades[i]
-            try:
-                real_pgrade = real_pgrades[i]
-            except:
-                import pdb; pdb.set_trace()
+            real_pgrade = real_pgrades[i]
             line = lines[i]
             f.write('%f\t%d\t%d\t%f\t%d\t%s\n' % (math.fabs(real_pgrade-float(grade)), math.fabs(pgrade-grade), grade, real_pgrade, pgrade, line))
             i+=1

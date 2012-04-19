@@ -2,6 +2,8 @@ DEBUG = True
 ESSAY_SETS = range(1, 9)
 
 # Learning parameters
+LEARNER_CLASS = 'LinearRegression' # 'LinearRegression' | 'MatlabExample'
+REGULARIZATION = 0.01 # The value of the regularization parameter in the learning method, or None if no regularization
 GRANULAR_MODELS = False
 FEATURE_SELECTION = 'exclusive' # None | 'inclusive' | 'exclusive'
 DUMP = False # True | False  Dump features and grades to file and quit
@@ -21,7 +23,7 @@ LSI_EXTRA_SAMPLES = 100
 NUM_NN = 25
 
 FEATURE_CACHE = {
-    'FeatureHeuristics': True,
+    'FeatureHeuristics': False,
     'FeatureSpelling': True,
     'FeatureTransitions': True,
     'FeatureLSI': True, # If set to False, I highly suggest setting genLSA to False.
@@ -29,5 +31,5 @@ FEATURE_CACHE = {
     'FeaturePOS_LSI': True,
     'genLSA': True,
     'FeatureSim': True,
-    'FeatureNN': False,
+    'FeatureNN': True,
     }
