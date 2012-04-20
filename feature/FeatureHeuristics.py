@@ -4,10 +4,11 @@ import math
 import nltk
 import numpy as np
 import re
+import LanguageUtils
 
 class FeatureHeuristics(object):
     
-    word_splitter = re.compile("\\s+")
+    #word_splitter = re.compile("\\s+")
     sentence_splitter = nltk.PunktSentenceTokenizer()
     entity_types = ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT"]
     notable_punctuation = ['.', '?', '!', '-', ';']
@@ -184,7 +185,8 @@ class FeatureHeuristics(object):
         lenfeats = list()
         for line in ds.getRawText():
             curfeat = list()
-            words = (FeatureHeuristics.word_splitter.split(line))
+            words = (LanguageUtils.tokenize(line))
+            #words = (FeatureHeuristics.word_splitter.split(line))
             syllables = [self.countSyllables(word) for word in words]
             sentences = FeatureHeuristics.sentence_splitter.tokenize(line)
             numChars = float(len(line))
