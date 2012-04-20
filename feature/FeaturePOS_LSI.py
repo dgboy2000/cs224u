@@ -35,6 +35,12 @@ class FeaturePOS_LSI(object):
         tfidf = corpus.getPOS_Tfidf()
         for mm in ds.getGensimPOSCorpus():
             cur_feat = list()
+
+            if len(mm) == 0:
+                if params.DEBUG:
+                    print "WARNING: No LSI features for current feature. Using (0,1) - which may be a horrible assumption."
+                mm = [(0,1)]
+
             for topic, score in lsi[tfidf[mm]]:
                 cur_feat.append(score)
 

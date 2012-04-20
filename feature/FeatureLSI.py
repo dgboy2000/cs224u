@@ -33,8 +33,15 @@ class FeatureLSI(object):
         feats = list()
         lsi = corpus.getLSA()
         tfidf = corpus.getTfidf()
+        text = ds.getRawText()
+        i=0
         for mm in ds.getGensimCorpus():
             cur_feat = list()
+            if len(mm) == 0:
+                if params.DEBUG:
+                    print "WARNING: No LSI features for current feature. Using (0,1) - which may be a horrible assumption."
+                mm = [(0,1)]
+
             for topic, score in lsi[tfidf[mm]]:
                 cur_feat.append(score)
 
@@ -42,6 +49,7 @@ class FeatureLSI(object):
                 print "NON-MATCHING FEATURE LENGTH...LSI"
                 import pdb;pdb.set_trace()
             feats.append(cur_feat)
+            i+=1
 
         self.features = np.asarray(feats)
         return
