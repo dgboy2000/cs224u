@@ -37,7 +37,7 @@ class MatlabExample(object):
     def grade(self, features, essay_set, domain, options={}):
         """Return an integer grade for each feature vector in the specified array."""
 
-        f = open('output/ds.set%d.dom%d.%s.matOut' % (essay_set, domain, options['postfix']), 'r') # TODO this is broken
+        f = open('output/ds.set%d.dom%d.%s.matOut' % (essay_set, domain, options['postfix']), 'r')
         scores = list()
         for line in f.readlines():
             scores.append(float(line))
