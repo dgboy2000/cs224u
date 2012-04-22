@@ -42,7 +42,10 @@ class MatlabExample(object):
         for line in f.readlines():
             scores.append(float(line))
 
-        grades = [self.curve.curve(score) for score in scores]
+        if options['round']:
+            grades = [int(round(score)) for score in scores]
+        else:
+            grades = [self.curve.curve(score) for score in scores]
 
         return np.asarray(grades)
 
