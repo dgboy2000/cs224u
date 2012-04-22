@@ -1,5 +1,10 @@
 
+cvParams.finalSubmit = 0;
+
 cvParams.useTextFeat = 0;
+disp(cvParams)
+
+disp(['Given: prefix2=' prefix2 ', prefix=' prefix])
 
 %prefix='output/features.set1.dom1';prefix2='output/ds.set1.dom1';
 %matlab/trainTestEssayPipe
@@ -22,6 +27,14 @@ delete(file_tst)
 [X_trn,Y_trn,Text_trn] = getFeatAndGrade(prefix,prefix2,'train');
 [X_tst,Y_tst,Text_tst] = getFeatAndGrade(prefix,prefix2,'test');
 
+disp([num2str(length(Y_trn)) ' training samples, ' num2str(length(Y_tst)) ' test samples with a label'])
+
+if cvParams.finalSubmit && length(Y_tst)==0
+    Y_tst = zeros(size(X_tst,1),1);    
+end
+
+disp([num2str(length(Y_trn)) ' training samples, ' num2str(length(Y_tst)) ' test samples'])
+
 if cvParams.useTextFeat
     if ~exist([prefix2 '.textFeat.mat'],'file')
         [X_trn_text,X_tst_text] = extractTextFeatures(Text_trn,Text_tst,prefix2);
@@ -36,6 +49,68 @@ end
 
 %save('allDataSet2Dom2.mat','X_trn','Y_trn','Text_trn','X_tst','Y_tst','Text_tst','X_trn_text','X_tst_text')
 
+%% k-NN (k nearest neighbor): fail!
+% % assumes, we ran the feature extraction once
+
+% load([prefix2 '.textPrePro.train.mat'],'allSNum','allSStr', 'allSOStr','wordIDLexicon');
+% load([prefix2 '.textPrePro.test.mat'],'allSNumTest','allSStrTest', 'allSOStrTest');
+% %%
+% numWords = length(wordIDLexicon.keys);
+% allH_trn = zeros(length(allSNum),numWords);
+% for e = 1:length(allSNum)
+%     H = hist(allSNum{e},1:numWords);
+%     allH_trn(e,:) = H;% /sum(H)
+% end
+% 
+% allH_trn=allH_trn(:,1:200);
+% 
+% allH_tst = zeros(length(allSNumTest),numWords);
+% for e = 1:length(allSNumTest)
+%     H = hist(allSNumTest{e},1:numWords);
+%     allH_tst(e,:) = H;% /sum(H)
+% end
+% 
+% allH_tst=allH_tst(:,1:200);
+% 
+% occurance_trn = (allH_trn>0);
+% idf_termCountsTrain = log(size(allH_trn,1)./sum(occurance_trn));
+% idf_termCountsTrain(isinf(idf_termCountsTrain)) = 0;
+% 
+% idf_trn = repmat(idf_termCountsTrain, size(allH_trn,1),1);
+% tf_trn = allH_trn.* repmat((sum(allH_trn').^(-1))',1,size(allH_trn,2));
+% tf_trn(isnan(tf_trn))=0;
+% % tf_trn(isinf(tf_trn))=0;
+% tfidf_trn = tf_trn.*idf_trn;
+% 
+% occurance_tst = (allH_tst>0);
+% tf_tst = allH_tst.* repmat((sum(allH_tst').^(-1))',1,size(allH_tst,2));
+% idf_tst = repmat(idf_termCountsTrain, size(allH_tst,1),1);
+% tf_tst(isnan(tf_tst))=0;
+% % tf_tst(isinf(tf_tst))=0;
+% tfidf_tst = tf_tst.*idf_tst;
+% 
+% % % add idf features
+% % % mean idf: hurt performance a little (but i'm not CVing across everything anymore ):/
+% % mean_idf_trn = mean(idf_trn.*occurance_trn,2);
+% % mean_idf_tst = mean(idf_tst.*occurance_tst,2);
+% % X_trn = [X_trn mean_idf_trn];
+% % X_tst = [X_tst mean_idf_tst];
+
+% M = slmetric_pw(tfidf_tst', tfidf_trn', 'nrmcorr');
+% k=5;
+% Y_tst_knn = zeros(size(X_tst,1),1);
+% for i = 1:size(X_tst,1)
+%     [val asd] = sort(M(i,:),'descend'); %ascend
+%     Y_tst_knn(i) = mean(Y_trn(asd(1:k)));
+% end
+% 
+% evalTest = [Y_tst round(Y_tst_knn)];
+% kappaTest_kNN = scoreQuadraticWeightedKappa(evalTest);
+% disp(['kNN: kappaTest = ' num2str(kappaTest_kNN)])
+% 
+
+
+
 %% normalize features
 m = mean(X_trn,1);
 X_trn = bsxfun(@minus,X_trn,m);
@@ -47,169 +122,38 @@ X_tst = bsxfun(@minus,X_tst,m);
 X_tst = bsxfun(@times,stdev,X_tst);
 %X_tst = bsxfun(@max,bsxfun(@min,X_tst,3*stdev),-3*stdev);
 
-
-
 %% Set best parameters for each set here
 % different CV sets for diff. essay sets
-switch prefix2
-    case 'output/ds.set1.dom1',
-        allTreeCV = [130 ];
-        allMtryCV = [160 ];
-        allNodeSizeCV = [5 ];
-
-        allSVMReg = 2;
-        
-        wFcts = {'welsch'}; %'fair','ols'
-        tuningConst = [2.1];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .3;
-        nnCV_regC_Wreg = 0;
-    case 'output/ds.set2.dom1',
-        allTreeCV = [110 ];
-        allMtryCV = [2 ];
-        allNodeSizeCV = [20 ];
-        
-        allSVMReg = .5;
-        
-        wFcts = {'talwar'}; %'fair','ols'
-        tuningConst = [0.1];
-        
-        nnCV_AllHid = 2;
-        nnCV_regC = .3;
-        nnCV_regC_Wreg = 0.6;
-    case 'output/ds.set2.dom2',
-        allTreeCV = [150 ];
-        allMtryCV = [60 ];
-        allNodeSizeCV = [25 ];
-        
-        allSVMReg = .5;
-        
-        wFcts = {'talwar'}; %'fair','ols'
-        tuningConst = [2.1];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .2;
-        nnCV_regC_Wreg = 0.3;
-    case 'output/ds.set3.dom1',
-        allTreeCV = [130 ];
-        allMtryCV = [160 ];
-        allNodeSizeCV = [70 ];
-        
-        allSVMReg = .1;
-        
-        wFcts = {'welsch'}; %'fair','ols'
-        tuningConst = [1.339];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .3;
-        nnCV_regC_Wreg = 0.1;
-    case 'output/ds.set4.dom1',
-        allTreeCV = [110 ];
-        allMtryCV = [70 ];
-        allNodeSizeCV = [3 ];
-        
-        allSVMReg = .1;
-        
-        wFcts = {'talwar'}; %'fair','ols'
-        tuningConst = [2.1];
-        
-        nnCV_AllHid = 2;
-        nnCV_regC = .5;
-        nnCV_regC_Wreg = 0.1;
-    case 'output/ds.set5.dom1',
-        allTreeCV = [170 ];
-        allMtryCV = [6 ];
-        allNodeSizeCV = [3 ];
-        
-        allSVMReg = .5;
-        
-        wFcts = {'bisquare'}; %'fair','ols'
-        tuningConst = [4];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .3;
-        nnCV_regC_Wreg = 0.4;
-    case 'output/ds.set6.dom1',
-        allTreeCV = [150 ];
-        allMtryCV = [70 ];
-        allNodeSizeCV = [25 ];
-        
-        allSVMReg = 2;
-        
-        wFcts = {'talwar'}; %'fair','ols'
-        tuningConst = [2.1];
-        
-        nnCV_AllHid = 2;
-        nnCV_regC = .6;
-        nnCV_regC_Wreg = 0.4;
-    case 'output/ds.set7.dom1',
-        allTreeCV = [150 ];
-        allMtryCV = [64 ];
-        allNodeSizeCV = [3 ];
-        
-        allSVMReg = 1;
-        
-        wFcts = {'huber'}; %'fair','ols'
-        tuningConst = [0.1];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .5;
-        nnCV_regC_Wreg = 0.2;
-    case 'output/ds.set8.dom1',
-        allTreeCV = [170 ];
-        allMtryCV = [200 ];
-        allNodeSizeCV = [25 ];
-        
-        allSVMReg = .5;
-        
-        wFcts = {'huber'}; %'fair','ols'
-        tuningConst = [4];
-        
-        nnCV_AllHid = 1;
-        nnCV_regC = .4;
-        nnCV_regC_Wreg = 0.1;
-    otherwise
-        error('different prefix2 than what is implemented?')
-end
+setEssaySetParameters
 
 
-%% CV Sets for the different parameters
+%% CV Sets for the different methods
 % % FOR CV Only: Boosting
-% allTreeCV = [100 110 130 150 170 200];
-% allMtryCV = [2 4 6 32 60 64 70 128 160 200 ];
-% allNodeSizeCV = [3 20 30 35 50 70 5  25 ];
-% allSVMReg = [0.1 .5 1 2] %3 3.5 4 5 10
+allTreeCV = [100 110 130 150 170 200];
+allMtryCV = [2 4 6 32 60 64 70 128 160 200 ];
+allNodeSizeCV = [3 20 30 35 50 70 5  25 ];
 
-% % Neural Net:
-% nnCV_AllHid = [1 2 3 4];
-% nnCV_regC = [0:0.1:0.6]
-% nnCV_regC_Wreg = [0:0.1:0.6]
+% SVM:
+allSVMReg = [0.1 .5 1 2] %3 3.5 4 5 10
 
-% nnCV_AllHid = [1];
-% nnCV_regC = [0.01]
-% nnCV_regC_Wreg = [0.3]
+% Neural Net:
+nnCV_AllHid = [1 2 3 4];
+nnCV_regC = [0:0.1:0.6]
+nnCV_regC_Wreg = [0:0.1:0.6]
 
-nnCV_AllHid = [1];
-nnCV_regC = [0:0.01:1]
-nnCV_regC_Wreg = [0.3]
-
-
-%wFcts = {'andrews','bisquare','cauchy','fair'	,'huber'	,'logistic','ols','talwar','welsch'};
-%tuningConst = [0.0001 0.001 .01 0.1,0.3,0.5,0.7,0.9,2.1,2.9,3,4,6, 1.339,4.685,2.385,1.400,	1.345,	1.205,	2.795,2.985];
-% best ones only include:
-% wFcts = {'bisquare','huber','talwar','welsch'}; %'fair','ols'
-% tuningConst = [4,1.339,0.1,1.345,2.1,2.9];
+% %wFcts = {'andrews','bisquare','cauchy','fair'	,'huber'	,'logistic','ols','talwar','welsch'};
+% %tuningConst = [0.0001 0.001 .01 0.1,0.3,0.5,0.7,0.9,2.1,2.9,3,4,6, 1.339,4.685,2.385,1.400,	1.345,	1.205,	2.795,2.985];
+% % % best ones only include:
+wFcts = {'bisquare','huber','talwar','welsch'}; %'fair','ols'
+tuningConst = [4,1.339,0.1,1.345,2.1,2.9];
 
 
 %% Neural Nets
 [Y_trn_nn,Y_hat_nn,maxKappaNN,bestParamsNN] = getPrediction_NN(X_trn,Y_trn,X_tst,Y_tst,nnCV_AllHid,nnCV_regC,nnCV_regC_Wreg,prefix);
 
 
-
 %% Boosting
 [Y_trn_boost,Y_hat_boost,maxKappaBoost] = getPrediction_Boost(X_trn,Y_trn,X_tst,Y_tst,allMtryCV,allTreeCV,allNodeSizeCV,prefix);
-
 
 
 %% SVM regression
@@ -219,30 +163,6 @@ nnCV_regC_Wreg = [0.3]
 %% Linear Regression
 % [Y_trn_linReg,Y_hat_linReg,maxKappaLinReg] = getPrediction_linReg(X_trn,Y_trn,X_tst,Y_tst,wFcts,tuningConst,prefix);
 [Y_trn_linReg,Y_hat_linReg,maxKappaLinReg] = getPrediction_linReg(X_trn,Y_trn,X_tst,Y_tst,wFcts,tuningConst,prefix,bestParamsNN.model);
-
-
-
-
-%% Bagging!
-%%% classifications:
-% ntrees = 300;
-% Bclass = TreeBagger(ntrees,X_trn,Y_trn)
-% Y_hat_bagClass = predict(Bclass,X_tst);
-% evalTest = [Y_tst str2double(Y_hat_bagClass)];
-% kappaTestBagClass = scoreQuadraticWeightedKappa(evalTest)
-%
-% ntrees = 160;
-% Breg = TreeBagger(ntrees,X_trn,Y_trn,'Method','regression','oobpred','on')
-% % plot(oobError(Breg))
-% % xlabel('number of grown trees')
-% % ylabel('out-of-bag error')
-%
-% Y_hat_bag = predict(Breg,X_tst);
-% evalTest = [Y_tst round(Y_hat_bag)];
-% kappaTestReg = scoreQuadraticWeightedKappa(evalTest)
-%TODO: Average this too? try
-
-
 
 
 %% Gaussian Process Regression
@@ -264,8 +184,6 @@ maxKappaEns = -Inf;
 %%% without neural net
 Y_trn_ens = mean([ Y_trn_boost Y_trn_linReg Y_trn_svm ],2);
 Y_hat_ens = mean([ Y_hat_boost Y_hat_linReg Y_hat_svm ],2);
-
-
 
 evalTest = [Y_tst round(Y_hat_ens)];
 kappaTest_ens = scoreQuadraticWeightedKappa(evalTest);
@@ -291,34 +209,72 @@ allBestKappas = [maxKappaBoost,maxKappaLinReg,maxKappaEns,maxKappaSVM, maxKappaN
 [winningKappa ind] = max(allBestKappas);
 opt.writeFlag = 'w+';
 
-if ind==1
-    disp(['Boosting Wins with ' num2str(winningKappa) ])
+if ~cvParams.finalSubmit
+    finalRegressionMethod = ind;
+end
+
+if finalRegressionMethod==1
+    outString = [prefix  ' winner: boost '  num2str(winningKappa) ];
+    disp(outString)
+    writeTextFile('_allResults.txt',{outString})
+    
     writeTextFile(file_trn,Y_trn_boost,opt);
     writeTextFile(file_tst,Y_hat_boost,opt);
-elseif ind==2
-    disp(['LinReg Wins with ' num2str(winningKappa) ])
+elseif finalRegressionMethod==2
+    outString = [prefix  ' winner: linReg '  num2str(winningKappa) ];
+    disp(outString)
+    writeTextFile('_allResults.txt',{outString})    
+
     writeTextFile(file_trn,Y_trn_linReg,opt);
     writeTextFile(file_tst,Y_hat_linReg,opt);
-elseif ind==3
-    disp(['Ensemble Wins with ' num2str(winningKappa) ])
+elseif finalRegressionMethod==3
+    outString = [prefix  ' winner: Ensemble '  num2str(winningKappa) ];
+    disp(outString)
+    writeTextFile('_allResults.txt',{outString})
+    
     writeTextFile(file_trn,best_Y_trn,opt);
     writeTextFile(file_tst,best_Y_hat,opt);
-elseif ind==4
-    disp(['SVM Wins with ' num2str(winningKappa) ])
+elseif finalRegressionMethod==4
+    outString = [prefix  ' winner: SVM '  num2str(winningKappa) ];
+    disp(outString)
+    writeTextFile('_allResults.txt',{outString})
+    
     writeTextFile(file_trn,Y_trn_svm,opt);
     writeTextFile(file_tst,Y_hat_svm,opt);
-elseif ind==5
-    disp(['Neural Net Wins with ' num2str(winningKappa) ])
+elseif finalRegressionMethod==5
+    outString = [prefix  ' winner: neural '  num2str(winningKappa) ];
+    disp(outString)
+    writeTextFile('_allResults.txt',{outString})
+    
     writeTextFile(file_trn,Y_trn_nn,opt);
-    writeTextFile(file_tst,Y_hat_nn,opt);    
+    writeTextFile(file_tst,Y_hat_nn,opt);
 else
     error('ERROR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! only 4 options!!')
 end
 
 disp('DONE: set best winningKappa')
 
-
+%TODO: Save parameters in /output directory with tab and parameters , separated
 
 
 %playAroundTestBed
 
+
+%% Bagging!
+%%% classifications:
+% ntrees = 300;
+% Bclass = TreeBagger(ntrees,X_trn,Y_trn)
+% Y_hat_bagClass = predict(Bclass,X_tst);
+% evalTest = [Y_tst str2double(Y_hat_bagClass)];
+% kappaTestBagClass = scoreQuadraticWeightedKappa(evalTest)
+%
+% ntrees = 160;
+% Breg = TreeBagger(ntrees,X_trn,Y_trn,'Method','regression','oobpred','on')
+% % plot(oobError(Breg))
+% % xlabel('number of grown trees')
+% % ylabel('out-of-bag error')
+%
+% Y_hat_bag = predict(Breg,X_tst);
+% evalTest = [Y_tst round(Y_hat_bag)];
+% kappaTestReg = scoreQuadraticWeightedKappa(evalTest)
+%TODO: Average this too? try
