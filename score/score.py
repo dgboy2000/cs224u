@@ -77,12 +77,14 @@ class KappaScore:
 
 class MeanKappaScore():
     """A mean weighted Kappa score across a few datasets."""
-    def __init__(self, scores=[]):
+    def __init__(self, scores=[], weights=[]):
         self.scores = list(scores)
+        self.weights = list(weights)
         
-    def add(self, score):
+    def add(self, score, weight=1.0):
         assert isinstance(score, KappaScore)
         self.scores.append(score)
+        self.weights.append(weight)
     
     def mean_quadratic_weighted_kappa(self, weights=None):
         """
@@ -102,9 +104,11 @@ class MeanKappaScore():
         """
         kappas = numpy.array([score.quadratic_weighted_kappa() for score in self.scores], dtype=float)
         if weights is None:
-            weights = numpy.ones(numpy.shape(kappas))
-        else:
-            weights = weights / numpy.mean(weights)
+            if self.weights:
+                weights = numpy.asarray(self.weights)
+            else:
+                weights = numpy.ones(numpy.shape(kappas))
+        weights = weights / numpy.mean(weights)
 
         # ensure that kappas are in the range [-.999, .999]
         kappas = numpy.array([min(x, .999) for x in kappas])

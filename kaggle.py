@@ -27,8 +27,8 @@ if RUN_VAL:
             run.predict()
             train_score, test_score = run.eval()
 
-            train_mean_kappa.add(train_score)
-            val_mean_kappa.add(test_score)
+            train_mean_kappa.add(train_score, weight=1.0/total_domains)
+            val_mean_kappa.add(test_score, weight=1.0/total_domains)
             print "--\n"
 
     print "Overall Train / Test"
