@@ -11,6 +11,7 @@ class FeatureHeuristics(object):
     #word_splitter = re.compile("\\s+")
     sentence_splitter = nltk.PunktSentenceTokenizer()
     entity_types = ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT"]
+    other_filter_types = ["MONTH", "EMAIL", "NUM", "CAPS", "DR", "CITY", "STATE"]
     notable_punctuation = ['.', '?', '!', '-', ';']
     
     
