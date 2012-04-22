@@ -126,10 +126,10 @@ class Run:
         all_mat = np.concatenate((self.train_feat_mat, self.test_feat_mat), axis=0)
         for i in range(self.train_feat_mat.shape[1]): # norm to unit mean/var.
             if sum(all_mat[:,i] > 0.0):
-                self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+                self.train_feat_mat[:,i] = (self.train_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.std(all_mat[:,i])
         for i in range(self.test_feat_mat.shape[1]): # norm to unit mean/var.
             if sum(all_mat[:,i] > 0.0):
-                self.test_feat_mat[:,i] = (self.test_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.var(all_mat[:,i])
+                self.test_feat_mat[:,i] = (self.test_feat_mat[:,i] - np.mean(all_mat[:,i])) / np.std(all_mat[:,i])
 
         return
         
