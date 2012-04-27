@@ -21,7 +21,10 @@ class RandomForest(object):
     
   def predict(self, features):
     num_samples, num_features = features.shape
-    probs = [prob[1] for prob in self.rf.predict_proba(features)]
+    try:
+      probs = [prob[1] for prob in self.rf.predict_proba(features)]
+    except:
+      import pdb;pdb.set_trace()
     return np.minimum(np.maximum(probs, 0.01*np.ones(num_samples)), 0.99*np.ones(num_samples))
 
     

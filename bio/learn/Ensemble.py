@@ -13,23 +13,7 @@ class Ensemble:
     
   def _crossValidateLearners(self, dataset, num_folds):
     for learner_ind,learner in enumerate(self.learners):
-      learner_type = type(learner).__name__
-      fname = 'cache/%s.pickle' %learner_type
-
-      try:
-        if (learner_type not in params.FEATURE_CACHE) or not params.FEATURE_CACHE[learner_type]:
-          raise Exception('Do not use cache.')
-        f = open(fname, 'rb')
-        learner = pickle.load(f)
-        if params.DEBUG:
-          print "Using cached %s..." %learner_type
-      except:
-        if params.DEBUG:
-          print "Cross-validating %s..." %learner_type
-        learner.cross_validate(dataset, num_folds)
-        pickle.dump(learner, open(fname, 'w'))
-
-      self.learners[learner_ind] = learner
+      self.learners[learner_ind] = self._loadOrCVLearner(learner, dataset, num_folds)
     
   def _getLearnerCVPredictions(self, dataset, num_folds):
     learner_predictions = np.zeros((dataset.getNumSamples(), len(self.learners)))
@@ -40,10 +24,56 @@ class Ensemble:
       fold_train = dataset.getTrainFold(fold_ind)
       fold_test = dataset.getTestFold(fold_ind)
       prediction_inds = dataset.getTestFoldInds(fold_ind)
-      self._trainLearners(fold_train.getFeatures(), fold_train.getLabels())
+      self._loadOrTrainLearners(fold_train.getFeatures(), fold_train.getLabels(), extension="%dof%d" %(fold_ind+1, num_folds))
       for learner_ind,learner in enumerate(self.learners):
         learner_predictions[prediction_inds, learner_ind] = learner.predict(fold_test.getFeatures())
-    return learner_predictions
+    return learner_predictions    
+
+  def _loadOrCVLearner(self, learner, dataset, num_folds):
+    learner_type = type(learner).__name__
+    fname = 'cache/%s.pickle' %learner_type
+
+    try:
+      if (learner_type not in params.FEATURE_CACHE) or not params.FEATURE_CACHE[learner_type]:
+        raise Exception('Do not use cache.')
+      f = open(fname, 'rb')
+      learner = pickle.load(f)
+      if params.DEBUG:
+        print "Using cached %s..." %learner_type
+    except:
+      if params.DEBUG:
+        print "Cross-validating %s..." %learner_type
+      learner.cross_validate(dataset, num_folds)
+      pickle.dump(learner, open(fname, 'w'))
+
+    return learner
+    
+  def _loadOrTrainLearner(self, learner, features, labels, extension=None):
+    learner_type = type(learner).__name__
+    fname = 'cache/%s' %learner_type
+    if extension is not None:
+      fname += ".%s" %extension
+    fname += ".pickle"
+
+    try:
+      if (learner_type not in params.FEATURE_CACHE) or not params.FEATURE_CACHE[learner_type]:
+        raise Exception('Do not use cache.')
+      f = open(fname, 'rb')
+      learner = pickle.load(f)
+      if params.DEBUG:
+        print "Using cached %s..." %fname
+    except:
+      if params.DEBUG:
+        print "Training and dumping %s..." %fname
+      learner.train(features, labels)
+      pickle.dump(learner, open(fname, 'w'))
+
+    return learner
+
+  def _loadOrTrainLearners(self, features, labels, extension=None):
+    """Train all learners on a speficied dataset"""
+    for learner_ind, learner in enumerate(self.learners):
+      self.learners[learner_ind] = self._loadOrTrainLearner(learner, features, labels, extension=extension)
 
   def _selectLearnerWeights(self, labels):
     """Grid search for the optimal weights on the params."""
@@ -63,11 +93,6 @@ class Ensemble:
         best_loss = cur_loss
         best_weight_a = weight_a
     self.weights = np.asarray([best_weight_a, 1-best_weight_a])
-    
-  def _trainLearners(self, features, labels):
-    """Train all learners on a speficied dataset"""
-    for learner in self.learners:
-      learner.train(features, labels)
         
   def addLearner(self, learner):
     self.learners.append(learner)
@@ -82,7 +107,7 @@ class Ensemble:
     self._selectLearnerWeights(dataset.getLabels())
     if self.debug:
       print "Training all models on all data..."
-    self._trainLearners(dataset.getFeatures(), dataset.getLabels())
+    self._loadOrTrainLearners(dataset.getFeatures(), dataset.getLabels(), extension='full')
     
   def predict(self, dataset):
     probs = np.zeros(dataset.getNumSamples())
