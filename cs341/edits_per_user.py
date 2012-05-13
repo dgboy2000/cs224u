@@ -39,9 +39,6 @@ def testXML():
   parser.parse("/Users/dannygoodman/Downloads/enwiki-20111201-stub-meta-history1.xml")
   print "Processed %d total revisions" %len(revisionHandler._revisionAuthors)
   
-  #!/usr/bin/python
-  import sys 
-  import re 
 
 def main(argv): 
   pattern = re.compile("^        <i(?:d|p)>(\d+)</i(?:d|p)>\s*$") 
