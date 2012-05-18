@@ -1,4 +1,0 @@
-import params
-import Score
-
-
